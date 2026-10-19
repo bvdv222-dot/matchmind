@@ -21,11 +21,18 @@ Done
 - **C5 match-intel MCP server** (`mcp_server/`): 12 tools, stdio + streamable HTTP, registered for Claude Code and Copilot; checked with a real stdio client.
 - Tests: 20 passing; generator validation re-run 48/48.
 
-Waiting on the owner
+## 2026-10-19 — Day 4 work (started early)
+
+Done
+- **C6 agents** (`agents/`): Agent Framework workflow Gather -> Analyst -> Facts -> Narrator -> Verifier (revise once / fall back) -> Personaliser (4-5 personas) -> Translator -> Publish, with a trace per note. The Verifier is code: numbers, attribution, time, result language, forecasting, names, real clubs, tone, length. Local provider: Ollama `qwen2.5:7b-instruct` via the OpenAI-compatible client; Foundry switch ready. The Analyst calls match-intel tools over MCP (HTTP). Full match run locally: 11 notes, real catches (invented 71%, a draw probability given to a team, hashtags); see [examples/agents_local_run.md](examples/agents_local_run.md). Docs: [AGENT_SYSTEM.md](AGENT_SYSTEM.md).
+- MCP SDK pinned to 1.30 (Agent Framework needs `mcp<2`); match-intel ported to FastMCP.
+- Tests: 38 passing (agent workflow tested offline with scripted models).
+
 - Create an Azure account → upgrade to pay-as-you-go → `az login`.
 - Set up GitHub Copilot (Education if eligible, else Pro).
 
 Next
 - Budget alert, resource group, Foundry project + OpenAI deployment + Claude (Marketplace) deployment, smoke-test both.
 - Walking-skeleton deploy once Azure is ready: Container Apps (generator job, intel + MCP over HTTP), Event Hubs, Cosmos DB, App Insights via `azd up`; registry reads the bus instead of replaying in-process.
-- Day 4: agents (Analyst, Narrator, Verifier, Personaliser, Translator) on Agent Framework + Foundry, calling match-intel.
+- Switch agents to Foundry models; Foundry evaluations on a fixed eval set (incl. refusal cases); tracing to App Insights.
+- C7 API + C8 web: overlay feed, persona/language switch, ask-this-view.

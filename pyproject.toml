@@ -8,7 +8,11 @@ dependencies = [
     "numpy>=2.0",
     "pydantic>=2.7",
     "jsonschema>=4.22",
-    "mcp==2.3.0",
+    "mcp==1.30.0",                     # Agent Framework 1.x requires mcp<2
+    "agent-framework-core==1.22.0",
+    "agent-framework-openai==1.17.0",   # OpenAI-compatible client: local Ollama now
+    "agent-framework-foundry==1.15.0",  # Microsoft Foundry models and agents
+    "azure-identity>=1.19",
 ]
 
 [project.optional-dependencies]

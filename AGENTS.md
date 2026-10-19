@@ -24,7 +24,7 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 | `generator/` | Synthetic league, season fixtures, match engine, position frames, live feed, validation against the calibration file ([docs/GENERATOR.md](docs/GENERATOR.md)) |
 | `intel/` | Possessions, xG, possession value, phases, rhythm, networks, win probability, expectation baselines, shifts, moments, fact sheets ([docs/INTEL.md](docs/INTEL.md)); models in `intel/models/` |
 | `mcp_server/` | match-intel MCP server exposing `intel/` as 12 tools (stdio + streamable HTTP) |
-| `agents/` | Microsoft Agent Framework workflow: Analyst, Narrator, Verifier, Personaliser, Translator |
+| `agents/` | Microsoft Agent Framework workflow: Analyst, Narrator, Verifier (code), Personaliser, Translator, with revise / fallback paths ([docs/AGENT_SYSTEM.md](docs/AGENT_SYSTEM.md)) |
 | `api/` | FastAPI: REST, WebSocket / Web PubSub broadcaster, personas, "ask about this view" |
 | `web/` | React + Vite + TypeScript front end |
 | `evals/` | Eval sets and runners (Foundry evaluations + number-check pass rate) |
@@ -50,6 +50,7 @@ python -m generator season --out data/season                            # fixtur
 python -m generator.validate --seasons 3 --frames 8                     # calibration check (must stay 48/48)
 python -m intel.train                                                   # rebuild intel/models after generator changes
 python -m mcp_server                                                    # match-intel MCP server (stdio)
+python -m agents run --home KIR --away NET --langs es --max-notes 8         # agents on a live match (Ollama locally)
 docker compose up            # local stack (added on day 3)
 azd up                       # Azure (added on day 3)
 ```

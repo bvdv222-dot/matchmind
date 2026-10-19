@@ -106,10 +106,12 @@ def _call(name, **args):
 
     async def go():
         r = await server.call_tool(name, args)
-        sc = getattr(r, "structuredContent", None)
-        if sc is None:
-            sc = json.loads(r.content[0].text)
-        return sc.get("result", sc)
+        # FastMCP returns (content blocks, structured result) for dict-returning tools
+        structured = r[1] if isinstance(r, tuple) else None
+        if structured is None:
+            blocks = r[0] if isinstance(r, tuple) else r
+            structured = json.loads(blocks[0].text)
+        return structured.get("result", structured)
     return anyio.run(go)
 
 

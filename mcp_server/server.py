@@ -11,7 +11,8 @@ from __future__ import annotations
 import argparse
 import os
 
-from mcp.server.mcpserver import MCPServer
+# MCP SDK v1 (FastMCP): Agent Framework 1.x requires mcp>=1.24,<2
+from mcp.server.fastmcp import FastMCP
 
 from intel import expect, facts
 from mcp_server.registry import Registry
@@ -23,7 +24,8 @@ get_moments, compare_to_expected, get_player_card, explain_event, get_win_probab
 Write narrative ONLY from get_fact_sheet lines: every number in your text must appear in those lines.
 Times are match minutes; nothing returned is from later than the match's current clock."""
 
-server = MCPServer("match-intel", title="MatchMind match intelligence", instructions=INSTRUCTIONS, version="0.1.0")
+server = FastMCP("match-intel", instructions=INSTRUCTIONS,
+                 host=os.environ.get("MM_MCP_HOST", "127.0.0.1"), port=int(os.environ.get("MM_MCP_PORT", "8765")))
 _registry: Registry | None = None
 
 
@@ -189,7 +191,8 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=8765)
     a = ap.parse_args()
     if a.http:
-        server.run("streamable-http", host=a.host, port=a.port)
+        server.settings.host, server.settings.port = a.host, a.port
+        server.run("streamable-http")
     else:
         server.run("stdio")
 
