@@ -1,0 +1,212 @@
+{
+  "$defs": {
+    "Colors": {
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Primary",
+          "type": "string"
+        },
+        "secondary": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Secondary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "secondary"
+      ],
+      "title": "Colors",
+      "type": "object"
+    },
+    "SheetPlayer": {
+      "additionalProperties": false,
+      "properties": {
+        "player_id": {
+          "title": "Player Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "short_name": {
+          "title": "Short Name",
+          "type": "string"
+        },
+        "shirt": {
+          "title": "Shirt",
+          "type": "integer"
+        },
+        "position": {
+          "enum": [
+            "GK",
+            "CB",
+            "LB",
+            "RB",
+            "DM",
+            "CM",
+            "AM",
+            "LW",
+            "RW",
+            "ST"
+          ],
+          "title": "Position",
+          "type": "string"
+        }
+      },
+      "required": [
+        "player_id",
+        "name",
+        "short_name",
+        "shirt",
+        "position"
+      ],
+      "title": "SheetPlayer",
+      "type": "object"
+    },
+    "TeamSheet": {
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "title": "Team Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "short_name": {
+          "title": "Short Name",
+          "type": "string"
+        },
+        "colors": {
+          "$ref": "#/$defs/Colors"
+        },
+        "formation": {
+          "title": "Formation",
+          "type": "string"
+        },
+        "starting": {
+          "items": {
+            "$ref": "#/$defs/SheetPlayer"
+          },
+          "maxItems": 11,
+          "minItems": 11,
+          "title": "Starting",
+          "type": "array"
+        },
+        "bench": {
+          "items": {
+            "$ref": "#/$defs/SheetPlayer"
+          },
+          "title": "Bench",
+          "type": "array"
+        }
+      },
+      "required": [
+        "team_id",
+        "name",
+        "short_name",
+        "colors",
+        "formation",
+        "starting",
+        "bench"
+      ],
+      "title": "TeamSheet",
+      "type": "object"
+    },
+    "Venue": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        },
+        "pitch_length": {
+          "default": 105.0,
+          "title": "Pitch Length",
+          "type": "number"
+        },
+        "pitch_width": {
+          "default": 68.0,
+          "title": "Pitch Width",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "city"
+      ],
+      "title": "Venue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "match_id": {
+      "title": "Match Id",
+      "type": "string"
+    },
+    "competition": {
+      "title": "Competition",
+      "type": "string"
+    },
+    "season": {
+      "title": "Season",
+      "type": "string"
+    },
+    "round": {
+      "title": "Round",
+      "type": "integer"
+    },
+    "kickoff_utc": {
+      "title": "Kickoff Utc",
+      "type": "string"
+    },
+    "venue": {
+      "$ref": "#/$defs/Venue"
+    },
+    "referee": {
+      "title": "Referee",
+      "type": "string"
+    },
+    "home": {
+      "$ref": "#/$defs/TeamSheet"
+    },
+    "away": {
+      "$ref": "#/$defs/TeamSheet"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "generator_version": {
+      "title": "Generator Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "match_id",
+    "competition",
+    "season",
+    "round",
+    "kickoff_utc",
+    "venue",
+    "referee",
+    "home",
+    "away",
+    "seed",
+    "generator_version"
+  ],
+  "title": "MatchMeta",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bvdv222-dot/matchmind/schema/match_meta.schema.json"
+}

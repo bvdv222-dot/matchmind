@@ -19,7 +19,8 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 
 | Path | Role |
 |---|---|
-| `schema/` | JSON Schemas: match metadata, events, overlay messages. The contract between components; change it first, then the code. |
+| `contracts/` | Pydantic models for the data contract (league, match metadata, events, position frames, overlays). Change these first, then run `python -m contracts.export`. |
+| `schema/` | JSON Schemas exported from `contracts/` (don't hand-edit). |
 | `generator/` | Synthetic league, squads, match engine, real-time publisher, validation against the calibration file |
 | `intel/` | Possessions, xG, possession value, phases, tempo, networks, win probability, expectation baselines, fact sheets |
 | `mcp_server/` | MCP server exposing `intel/` as tools |
@@ -44,6 +45,8 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 ```
 py -3.12 -m venv .venv && .venv\Scripts\activate && pip install -e .[dev]
 pytest
+python -m generator stream --home KIR --away RAV --speed 10   # live synthetic match as JSON lines
+python -m generator.validate --seasons 3                       # calibration check (must stay 41/41)
 docker compose up            # local stack (added on day 3)
 azd up                       # Azure (added on day 3)
 ```

@@ -1,0 +1,300 @@
+{
+  "$defs": {
+    "Colors": {
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Primary",
+          "type": "string"
+        },
+        "secondary": {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "title": "Secondary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary",
+        "secondary"
+      ],
+      "title": "Colors",
+      "type": "object"
+    },
+    "Player": {
+      "additionalProperties": false,
+      "properties": {
+        "player_id": {
+          "title": "Player Id",
+          "type": "string"
+        },
+        "team_id": {
+          "title": "Team Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "short_name": {
+          "title": "Short Name",
+          "type": "string"
+        },
+        "shirt": {
+          "maximum": 99,
+          "minimum": 1,
+          "title": "Shirt",
+          "type": "integer"
+        },
+        "position": {
+          "enum": [
+            "GK",
+            "CB",
+            "LB",
+            "RB",
+            "DM",
+            "CM",
+            "AM",
+            "LW",
+            "RW",
+            "ST"
+          ],
+          "title": "Position",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "GK",
+            "DF",
+            "MD",
+            "FW"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "foot": {
+          "enum": [
+            "left",
+            "right",
+            "both"
+          ],
+          "title": "Foot",
+          "type": "string"
+        },
+        "height_cm": {
+          "title": "Height Cm",
+          "type": "integer"
+        },
+        "weight_kg": {
+          "title": "Weight Kg",
+          "type": "integer"
+        },
+        "age": {
+          "title": "Age",
+          "type": "integer"
+        },
+        "attributes": {
+          "$ref": "#/$defs/PlayerAttributes"
+        }
+      },
+      "required": [
+        "player_id",
+        "team_id",
+        "name",
+        "short_name",
+        "shirt",
+        "position",
+        "role",
+        "foot",
+        "height_cm",
+        "weight_kg",
+        "age",
+        "attributes"
+      ],
+      "title": "Player",
+      "type": "object"
+    },
+    "PlayerAttributes": {
+      "additionalProperties": false,
+      "description": "Generator inputs. Multipliers centre on 1.0; physical values are per-90 profiles.",
+      "properties": {
+        "passing": {
+          "description": "completion odds multiplier",
+          "exclusiveMinimum": 0,
+          "title": "Passing",
+          "type": "number"
+        },
+        "finishing": {
+          "description": "goal probability multiplier vs the xG model",
+          "exclusiveMinimum": 0,
+          "title": "Finishing",
+          "type": "number"
+        },
+        "dribbling": {
+          "description": "take-on odds multiplier",
+          "exclusiveMinimum": 0,
+          "title": "Dribbling",
+          "type": "number"
+        },
+        "defending": {
+          "description": "tackle / interception odds multiplier",
+          "exclusiveMinimum": 0,
+          "title": "Defending",
+          "type": "number"
+        },
+        "aerial": {
+          "description": "aerial duel odds multiplier",
+          "exclusiveMinimum": 0,
+          "title": "Aerial",
+          "type": "number"
+        },
+        "top_speed_kmh": {
+          "title": "Top Speed Kmh",
+          "type": "number"
+        },
+        "distance_m_per_min": {
+          "title": "Distance M Per Min",
+          "type": "number"
+        },
+        "sprints_per90": {
+          "title": "Sprints Per90",
+          "type": "number"
+        }
+      },
+      "required": [
+        "passing",
+        "finishing",
+        "dribbling",
+        "defending",
+        "aerial",
+        "top_speed_kmh",
+        "distance_m_per_min",
+        "sprints_per90"
+      ],
+      "title": "PlayerAttributes",
+      "type": "object"
+    },
+    "Team": {
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "title": "Team Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "short_name": {
+          "title": "Short Name",
+          "type": "string"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        },
+        "stadium": {
+          "title": "Stadium",
+          "type": "string"
+        },
+        "colors": {
+          "$ref": "#/$defs/Colors"
+        },
+        "formation": {
+          "title": "Formation",
+          "type": "string"
+        },
+        "ratings": {
+          "$ref": "#/$defs/TeamRatings"
+        },
+        "players": {
+          "items": {
+            "$ref": "#/$defs/Player"
+          },
+          "title": "Players",
+          "type": "array"
+        }
+      },
+      "required": [
+        "team_id",
+        "name",
+        "short_name",
+        "city",
+        "stadium",
+        "colors",
+        "formation",
+        "ratings",
+        "players"
+      ],
+      "title": "Team",
+      "type": "object"
+    },
+    "TeamRatings": {
+      "additionalProperties": false,
+      "description": "Multiplicative, league geometric mean 1.0. attack/defence act on chance volume, quality on chance value.",
+      "properties": {
+        "attack": {
+          "exclusiveMinimum": 0,
+          "title": "Attack",
+          "type": "number"
+        },
+        "defence": {
+          "description": "> 1 = concedes more",
+          "exclusiveMinimum": 0,
+          "title": "Defence",
+          "type": "number"
+        },
+        "quality": {
+          "description": "finishing / chance-quality multiplier",
+          "exclusiveMinimum": 0,
+          "title": "Quality",
+          "type": "number"
+        }
+      },
+      "required": [
+        "attack",
+        "defence",
+        "quality"
+      ],
+      "title": "TeamRatings",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "league_id": {
+      "title": "League Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "season": {
+      "title": "Season",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "teams": {
+      "items": {
+        "$ref": "#/$defs/Team"
+      },
+      "title": "Teams",
+      "type": "array"
+    }
+  },
+  "required": [
+    "league_id",
+    "name",
+    "season",
+    "seed",
+    "teams"
+  ],
+  "title": "League",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bvdv222-dot/matchmind/schema/league.schema.json"
+}

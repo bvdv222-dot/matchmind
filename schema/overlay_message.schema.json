@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "OverlayTime": {
+      "additionalProperties": false,
+      "properties": {
+        "period": {
+          "enum": [
+            1,
+            2
+          ],
+          "title": "Period",
+          "type": "integer"
+        },
+        "t": {
+          "title": "T",
+          "type": "number"
+        },
+        "clock": {
+          "title": "Clock",
+          "type": "string"
+        }
+      },
+      "required": [
+        "period",
+        "t",
+        "clock"
+      ],
+      "title": "OverlayTime",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "msg_id": {
+      "title": "Msg Id",
+      "type": "string"
+    },
+    "match_id": {
+      "title": "Match Id",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "score_bug",
+        "stat_tile",
+        "moment_card",
+        "player_tag",
+        "win_prob",
+        "narrative",
+        "recap"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "at": {
+      "$ref": "#/$defs/OverlayTime"
+    },
+    "ttl_s": {
+      "description": "how long to keep it on screen",
+      "exclusiveMinimum": 0,
+      "title": "Ttl S",
+      "type": "number"
+    },
+    "priority": {
+      "description": "9 = interrupt everything (goal)",
+      "maximum": 9,
+      "minimum": 0,
+      "title": "Priority",
+      "type": "integer"
+    },
+    "audience": {
+      "description": "persona ids, or 'all'",
+      "items": {
+        "type": "string"
+      },
+      "title": "Audience",
+      "type": "array"
+    },
+    "lang": {
+      "default": "en",
+      "title": "Lang",
+      "type": "string"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Title"
+    },
+    "body": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Body"
+    },
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    },
+    "source_event_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Event Ids",
+      "type": "array"
+    },
+    "verified": {
+      "default": false,
+      "description": "passed the Verifier's grounding checks",
+      "title": "Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "msg_id",
+    "match_id",
+    "kind",
+    "at",
+    "ttl_s",
+    "priority"
+  ],
+  "title": "OverlayMessage",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bvdv222-dot/matchmind/schema/overlay_message.schema.json"
+}
