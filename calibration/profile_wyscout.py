@@ -413,7 +413,23 @@ for e in events:
 ratios = [g / x for g, x, n in pl_rows.values() if n >= 30 and x > 0]
 P["finishing_skill"] = {"players": len(ratios), "goals_over_xg": {"p10": round(st.quantiles(ratios, n=10)[0], 2), "median": round(st.median(ratios), 2), "p90": round(st.quantiles(ratios, n=10)[-1], 2)}}
 
-json.dump(P, open(out_path, "w", encoding="utf-8"), indent=1)
+# ---------------------------------------------------------------- final table spread (how unequal a season is)
+pts, gd = Counter(), Counter()
+for m in minfo.values():
+    h, a = home_of[m["wyId"]], away_of[m["wyId"]]
+    sh, sa = m["teamsData"][str(h)]["score"], m["teamsData"][str(a)]["score"]
+    pts[h] += 3 if sh > sa else (1 if sh == sa else 0)
+    pts[a] += 3 if sa > sh else (1 if sh == sa else 0)
+    gd[h] += sh - sa
+    gd[a] += sa - sh
+table = sorted(pts.values(), reverse=True)
+P["standings"] = {"teams": len(table), "points_max": table[0], "points_min": table[-1],
+                  "points_mean": round(st.mean(table), 2), "points_sd": round(st.pstdev(table), 2),
+                  "goal_difference_sd": round(st.pstdev(gd.values()), 2),
+                  "points_by_rank": table}
+
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(P, f, indent=1)
 
 # ---------------------------------------------------------------- console summary
 def show(title, d, depth=0):

@@ -2,8 +2,8 @@
 
 Change a model here first, re-export the JSON Schemas (`python -m contracts.export`), then update producers and
 consumers. Event coordinates are metres on a 105 x 68 pitch in the ACTING team's frame (attacking towards x = 105,
-y = 0 on that team's left touchline). Position frames are the exception: absolute, home team attacking towards
-x = 105 in period 1.
+y = 0 on that team's left touchline). Position frames are the exception: absolute, in the home team's first-half
+attacking frame.
 """
 from __future__ import annotations
 
@@ -59,6 +59,7 @@ class PlayerAttributes(_Model):
     dribbling: float = Field(gt=0, description="take-on odds multiplier")
     defending: float = Field(gt=0, description="tackle / interception odds multiplier")
     aerial: float = Field(gt=0, description="aerial duel odds multiplier")
+    stamina: float = Field(gt=0, description="> 1 tires more slowly")
     top_speed_kmh: float
     distance_m_per_min: float
     sprints_per90: float
@@ -167,6 +168,7 @@ class Event(_Model):
     end: Point | None = None
     body_part: BodyPart | None = None
     speed_kmh: float | None = Field(None, ge=0, description="ball speed for passes and shots")
+    duration_s: float | None = Field(None, ge=0, description="ball travel / carry time; `t` is when the action starts")
     possession: int = Field(ge=0, description="possession counter; increments when the team in control changes")
     possession_team_id: str | None = None
     tags: list[str] = Field(default_factory=list)
@@ -184,15 +186,24 @@ class PlayerPosition(_Model):
     x: float
     y: float
     speed_kmh: float = 0.0
+    distance_m: float = Field(0.0, description="distance covered so far in the match")
 
 
 class PositionFrame(_Model):
-    """Low-rate positions for overlays and player-focus mode (absolute frame, see module docstring)."""
+    """Low-rate positions for overlays and player-focus mode. Absolute frame = the home team's first-half attacking
+    frame (so the away team attacks towards x = 0 in period 1, and both flip in period 2)."""
     match_id: str
     period: Literal[1, 2]
     t: float
     ball: Ball3
     players: list[PlayerPosition]
+
+
+class StreamMessage(_Model):
+    """One line of the live feed: `kind` says which model `data` holds (meta = MatchMeta, event = Event,
+    frame = PositionFrame). Messages arrive in match-time order."""
+    kind: Literal["meta", "event", "frame"]
+    data: dict
 
 
 # --------------------------------------------------------------------------- overlays (what the screen renders)

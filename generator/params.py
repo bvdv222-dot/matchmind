@@ -54,18 +54,21 @@ SPOTS = {
 
 # --------------------------------------------------------------------------- team strength (CALIBRATED)
 # Log-space sds and correlation from the multiplicative Poisson fit on shots (volume) and goals (volume x quality).
-ATTACK_LOG_SD = 0.22
+ATTACK_LOG_SD = 0.27   # wider than the fitted 0.22 because the skew below shortens the weak tail
 DEFENCE_LOG_SD = 0.19
 ATTACK_DEFENCE_CORR = -0.86
 # goals attack sd 0.39 vs shots 0.22 -> the rest is chance quality; kept below the raw gap because part of that gap
 # is finishing noise over one season.
-QUALITY_LOG_SD = 0.18
+QUALITY_LOG_SD = 0.27
 QUALITY_ATTACK_CORR = 0.8
+# ASSUMED: asymmetric strength (season points: real champions ~100, bottom ~31 vs a symmetric draw)
+STRENGTH_SKEW_UP = 1.25
+STRENGTH_SKEW_DOWN = 0.55
 HOME_SHOT_MULT = 1.255      # shots home multiplier; split as sqrt on each side
 HOME_GOAL_MULT = 1.335      # goals home multiplier: the extra over shots is better home finishing
 # ASSUMED: the calibrated ratios are net of game state (home sides lead more, and leaders shoot less), so the
 # underlying home edge has to be a little larger than the observed one
-HOME_VOLUME_EXTRA = 1.05
+HOME_VOLUME_EXTRA = 1.08
 
 # --------------------------------------------------------------------------- players
 # Height / weight / age / left-foot share by role: CALIBRATED (Wyscout PL squads).
@@ -76,6 +79,8 @@ PHYSICAL = {   # position -> (m/min, sprints per 90, top speed km/h)
     "RW": (119, 10.5, 30.5), "ST": (118, 9.3, 30.0),
 }
 PHYSICAL_SCALE = 1.06
+TEAM_WIDTH_M = 37.0          # SkillCorner (MIT): median outfield block width / depth from one match of tracking
+TEAM_DEPTH_M = 31.0
 FINISHING_LOG_SD = 0.15      # CALIBRATED-ish: player goals/xG spread minus noise, capped near +-30% (2 sd)
 
 # --------------------------------------------------------------------------- match flow
@@ -107,13 +112,14 @@ TAKE_ON = {"won": 0.486, "lost": 0.224, "neutral": 0.290}  # CALIBRATED (ground 
 CARRY_LOSS = 0.03             # ASSUMED
 
 # Shots: per-touch shot propensity by distance band (m), ASSUMED and tuned so band shares match CALIBRATED ones.
-SHOT_PROPENSITY = [(6, 0.05), (11, 0.093), (16.5, 0.154), (22, 0.135), (30, 0.115), (36, 0.044)]
+SHOT_PROPENSITY = [(6, 0.047), (11, 0.088), (16.5, 0.146), (22, 0.13), (30, 0.11), (36, 0.042)]
 SHOT_OUTCOME_GIVEN_MISS = {"saved": 0.275, "blocked": 0.30, "off_target": 0.425}   # CALIBRATED (rescaled)
 SAVE_RESULT = {"held": 0.62, "corner": 0.12, "loose": 0.26}                          # ASSUMED
 BLOCK_RESULT = {"corner": 0.25, "loose": 0.75}                                        # ASSUMED
 OFF_TARGET_POST = 0.05
-HALF_CONVERSION = {1: 0.88, 2: 1.12}    # CALIBRATED: 42% of goals in the first half on 47% of shots
+HALF_CONVERSION = {1: 0.84, 2: 1.13}    # CALIBRATED: 42% of goals in the first half on 47% of shots
 GAME_STATE_SHOTS = {"leading": 0.916, "level": 1.02, "trailing": 1.059}   # CALIBRATED (within-team)
+LATE_GAME_STATE = {"from_minute": 75, "leading": 0.85, "trailing": 1.15}    # ASSUMED: score effects grow late
 
 # Set pieces: CALIBRATED targets (shot within 15 s); engine probabilities are tuned to hit them.
 CORNER_DIRECT_SHOT = 0.26
@@ -121,17 +127,25 @@ CORNER_SECOND_BALL = 0.35
 FK_CROSS_DIRECT_SHOT = 0.15
 DIRECT_FK_CONVERSION = 0.051
 PENALTY_CONVERSION = 0.70
-XG_SCALE = 0.80               # ASSUMED: absorbs within-band location mix vs the real shots; re-check after engine changes
-BOOKED_CAUTION = 0.3          # ASSUMED: booked players foul less recklessly (second yellows are rare)
+XG_SCALE = 0.765              # ASSUMED: absorbs the within-band location mix vs real shots; re-check on changes
+BOOKED_CAUTION = 0.22         # ASSUMED: booked players foul less recklessly (second yellows are rare)
 
 # Fouls & discipline: CALIBRATED rates, ASSUMED split across situations.
 FOUL_ON_TAKE_ON = 0.10
 FOUL_PER_TOUCH = 0.016       # possessor fouled (free kick to possessor)
 ATTACKING_FOUL_PER_TOUCH = 0.0025
 YELLOW_PER_FOUL = 0.145
-RED_PER_FOUL = 0.0027
+RED_PER_FOUL = 0.0018
 OFFSIDE_THROUGH = 0.11
 OFFSIDE_HIGH = 0.03
+# Fatigue (ASSUMED shape): f = FATIGUE_AT_90 * (minutes on / 90) ** 1.6 / stamina, capped at FATIGUE_CAP.
+# It lowers pass and duel odds, raises chances conceded, slows players in the position frames and decides
+# who is substituted.
+FATIGUE_AT_90 = 0.12
+FATIGUE_CAP = 0.30
+FATIGUE_PASS = 0.8
+FATIGUE_DUEL = 1.0
+FATIGUE_DEFENCE_XG = 1.0
 SUBS = {"three": 0.74, "minute_mean": 72.0, "minute_sd": 11.0, "earliest": 46, "latest": 89}
 
 # Timing (seconds): ASSUMED, tuned so possessions/match and half lengths match.

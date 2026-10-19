@@ -11,6 +11,7 @@ EXPORTS = {
     "event": models.Event,
     "position_frame": models.PositionFrame,
     "overlay_message": models.OverlayMessage,
+    "stream_message": models.StreamMessage,
 }
 
 

@@ -1,6 +1,8 @@
 """Simulate full seasons and compare the synthetic matches with the real calibration targets.
 
-usage: python -m generator.validate [--seasons 3] [--seed 2026] [--json out.json]
+usage: python -m generator.validate [--seasons 3] [--seed 2026] [--frames 4] [--json out.json]
+Seasons are played on the real fixture list (generator/season.py). --frames N also builds position frames for N
+matches and checks distance, sprints and team shape against the SkillCorner physical profiles.
 Exits non-zero if any metric falls outside its band, so CI can gate generator changes.
 """
 from __future__ import annotations
@@ -13,23 +15,61 @@ import sys
 import time
 from collections import Counter, defaultdict
 
+import numpy as np
+
 from generator import params as P
-from generator.engine import L, W, simulate
+from generator.engine import L, W
+from generator.frames import build_frames
 from generator.league import build_league
+from generator.season import play_season
 
-
-def fixtures(n_teams: int) -> list[tuple[int, int]]:
-    return [(h, a) for h in range(n_teams) for a in range(n_teams) if h != a]
+LAST_TABLES: list = []        # final tables from the last run(), for the standings metric
 
 
 def run(seasons: int, seed: int):
     out = []
+    LAST_TABLES.clear()
     for s in range(seasons):
         league = build_league(seed + s)
-        for k, (h, a) in enumerate(fixtures(len(league.teams))):
-            meta, ev = simulate(league.teams[h], league.teams[a], seed=(seed + s) * 100_000 + k)
-            out.append((league.seed, meta, ev))
+        _, _, table, matches = play_season(league, keep_events=True)
+        LAST_TABLES.append(table)
+        out.extend((league.seed, meta, ev) for meta, ev in matches)
     return out
+
+
+def measure_frames(matches, n: int) -> dict:
+    """Physical realism of the position frames, relative to each player's own profile."""
+    dist_ratio, sprint_ratio, width, depth = [], [], [], []
+    for league_seed, meta, ev in matches[:n]:
+        league = build_league(league_seed)
+        teams = {t.team_id: t for t in league.teams if t.team_id in (meta.home.team_id, meta.away.team_id)}
+        players = {p.player_id: p for t in teams.values() for p in t.players}
+        frames = build_frames(meta, ev, teams)
+        speeds: dict[str, list[float]] = {}
+        last: dict[str, float] = {}
+        for i, f in enumerate(frames):
+            for p in f["players"]:
+                speeds.setdefault(p["player_id"], []).append(p["speed_kmh"])
+                last[p["player_id"]] = p["distance_m"]
+            if i % 10 == 0:
+                for tid in teams:
+                    pts = [(p["x"], p["y"]) for p in f["players"]
+                           if p["team_id"] == tid and players[p["player_id"]].position != "GK"]
+                    if len(pts) >= 9:
+                        xs, ys = zip(*pts)
+                        width.append(max(ys) - min(ys))
+                        depth.append(max(xs) - min(xs))
+        for pid, sp in speeds.items():
+            pl = players[pid]
+            minutes = len(sp) / 120
+            if minutes < 80 or pl.position == "GK":
+                continue
+            dist_ratio.append(last[pid] / minutes / pl.attributes.distance_m_per_min)
+            a = np.array(sp) > 25.2
+            sprints = int((np.diff(np.concatenate([[0], a.astype(int)])) == 1).sum())
+            sprint_ratio.append(sprints / minutes * 90 / (pl.attributes.sprints_per90 * P.PHYSICAL_SCALE))
+    return {"frames_distance_vs_profile": st.mean(dist_ratio), "frames_sprints_vs_profile": st.mean(sprint_ratio),
+            "frames_team_width_m": st.median(width), "frames_team_depth_m": st.median(depth)}
 
 
 def wyscout_possessions(ev: list[dict]) -> int:
@@ -103,7 +143,8 @@ def measure(matches) -> dict:
                 half_end[e["period"]].append(e["t"] / 60)
         for tid in (h, a):
             team_shots[(league_seed, tid)][1] += 1
-        hg.append(goals[h]); ag.append(goals[a])
+        hg.append(goals[h])
+        ag.append(goals[a])
         res["H" if goals[h] > goals[a] else ("A" if goals[a] > goals[h] else "D")] += 1
     nshots = len(shot_rows)
     bands = [(0, 6), (6, 11), (11, 16.5), (16.5, 22), (22, 30), (30, 99)]
@@ -143,6 +184,7 @@ def targets() -> dict:
     """(target, tolerance) per metric, from the calibration file where it has the number."""
     cal = P.calibration()
     r, s, pm, sp = cal["results"], cal["shots"], cal["per_match_subevent"], cal["set_pieces"]
+    cards = cal["discipline_subs"]["cards_per_match"]
     t = {
         "goals_per_match": (r["home_goals_mean"] + r["away_goals_mean"], 0.15),
         "home_goals": (r["home_goals_mean"], 0.15), "away_goals": (r["away_goals_mean"], 0.15),
@@ -157,17 +199,23 @@ def targets() -> dict:
         "possessions_per_match": (cal["possessions"]["per_match"], 15),
         "corners_per_match": (pm["Corner"]["mean"], 1.5), "throw_ins_per_match": (pm["Throw in"]["mean"], 7),
         "goal_kicks_per_match": (pm["Goal kick"]["mean"], 3),
-        "free_kicks_per_match": (pm["Free Kick"]["mean"] + pm["Free kick cross"]["mean"] + pm["Free kick shot"]["mean"], 4),
+        "free_kicks_per_match": (pm["Free Kick"]["mean"] + pm["Free kick cross"]["mean"]
+                                 + pm["Free kick shot"]["mean"], 4),
         "fouls_per_match": (cal["per_match"]["Foul"]["mean"], 3),
         "yellows_per_match": (cal["discipline_subs"]["cards_per_match"]["yellow"], 0.6),
-        "reds_per_match": (cal["discipline_subs"]["cards_per_match"]["red"] + cal["discipline_subs"]["cards_per_match"]["second_yellow"], 0.08),
+        "reds_per_match": (cards["red"] + cards["second_yellow"], 0.08),
         "offsides_per_match": (cal["per_match"]["Offside"]["mean"], 1.5),
         "subs_per_team": (cal["discipline_subs"]["subs_per_team_match"], 0.2),
-        "penalties_per_match": (s["penalty"]["per_match"], 0.08), "penalty_conversion": (s["penalty"]["conversion"], 0.08),
+        "penalties_per_match": (s["penalty"]["per_match"], 0.08),
+        "penalty_conversion": (s["penalty"]["conversion"], 0.10),   # ~160 penalties per 2 seasons: se ~0.035
         "corner_shot_15s": (sp["Corner"]["shot_within_15s"], 0.06),
         "team_shots_log_sd": (0.22, 0.06),
         "half1_minutes": (cal["timing"]["half_length_min"]["1H"]["median"], 1.0),
         "half2_minutes": (cal["timing"]["half_length_min"]["2H"]["median"], 1.0),
+        "season_points_sd": (cal["standings"]["points_sd"], 4.5),
+        # one real season, and a record one (100 points): real champions span the 80s-100, so the band is wide
+        "season_points_max": (cal["standings"]["points_max"], 18),
+        "season_points_min": (cal["standings"]["points_min"], 12),
     }
     for k, v in cal["passes"]["by_type"].items():
         key = {"Simple pass": "ground", "High pass": "high", "Head pass": "head", "Cross": "cross", "Launch": "launch",
@@ -197,16 +245,26 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seasons", type=int, default=3)
     ap.add_argument("--seed", type=int, default=2026)
+    ap.add_argument("--frames", type=int, default=0, help="also check position frames for this many matches")
     ap.add_argument("--json")
     args = ap.parse_args()
     t0 = time.time()
     matches = run(args.seasons, args.seed)
     m = measure(matches)
+    pts = [[r.points for r in table] for table in LAST_TABLES]
+    m["season_points_sd"] = st.mean(st.pstdev(p) for p in pts)
+    m["season_points_max"] = st.mean(max(p) for p in pts)
+    m["season_points_min"] = st.mean(min(p) for p in pts)
+    t = targets()
+    if args.frames:
+        m.update(measure_frames(matches, args.frames))
+        t.update({"frames_distance_vs_profile": (1.0, 0.06), "frames_sprints_vs_profile": (1.0, 0.35),
+                  "frames_team_width_m": (P.TEAM_WIDTH_M, 4.0), "frames_team_depth_m": (P.TEAM_DEPTH_M, 5.0)})
     print(f"{len(matches)} matches in {time.time() - t0:.1f} s\n")
-    fails = report(m, targets())
+    fails = report(m, t)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as f:
-            json.dump({"metrics": m, "targets": targets()}, f, indent=1)
+            json.dump({"metrics": m, "targets": t}, f, indent=1)
     sys.exit(1 if fails else 0)
 
 

@@ -217,6 +217,20 @@
       "description": "ball speed for passes and shots",
       "title": "Speed Kmh"
     },
+    "duration_s": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "ball travel / carry time; `t` is when the action starts",
+      "title": "Duration S"
+    },
     "possession": {
       "description": "possession counter; increments when the team in control changes",
       "minimum": 0,

@@ -47,6 +47,12 @@
           "default": 0.0,
           "title": "Speed Kmh",
           "type": "number"
+        },
+        "distance_m": {
+          "default": 0.0,
+          "description": "distance covered so far in the match",
+          "title": "Distance M",
+          "type": "number"
         }
       },
       "required": [
@@ -60,7 +66,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "Low-rate positions for overlays and player-focus mode (absolute frame, see module docstring).",
+  "description": "Low-rate positions for overlays and player-focus mode. Absolute frame = the home team's first-half attacking\nframe (so the away team attacks towards x = 0 in period 1, and both flip in period 2).",
   "properties": {
     "match_id": {
       "title": "Match Id",

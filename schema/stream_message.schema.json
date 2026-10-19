@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "description": "One line of the live feed: `kind` says which model `data` holds (meta = MatchMeta, event = Event,\nframe = PositionFrame). Messages arrive in match-time order.",
+  "properties": {
+    "kind": {
+      "enum": [
+        "meta",
+        "event",
+        "frame"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    }
+  },
+  "required": [
+    "kind",
+    "data"
+  ],
+  "title": "StreamMessage",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bvdv222-dot/matchmind/schema/stream_message.schema.json"
+}

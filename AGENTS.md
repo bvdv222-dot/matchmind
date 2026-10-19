@@ -21,7 +21,7 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 |---|---|
 | `contracts/` | Pydantic models for the data contract (league, match metadata, events, position frames, overlays). Change these first, then run `python -m contracts.export`. |
 | `schema/` | JSON Schemas exported from `contracts/` (don't hand-edit). |
-| `generator/` | Synthetic league, squads, match engine, real-time publisher, validation against the calibration file |
+| `generator/` | Synthetic league, season fixtures, match engine, position frames, live feed, validation against the calibration file ([docs/GENERATOR.md](docs/GENERATOR.md)) |
 | `intel/` | Possessions, xG, possession value, phases, tempo, networks, win probability, expectation baselines, fact sheets |
 | `mcp_server/` | MCP server exposing `intel/` as tools |
 | `agents/` | Microsoft Agent Framework workflow: Analyst, Narrator, Verifier, Personaliser, Translator |
@@ -45,8 +45,9 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 ```
 py -3.12 -m venv .venv && .venv\Scripts\activate && pip install -e .[dev]
 pytest
-python -m generator stream --home KIR --away RAV --speed 10   # live synthetic match as JSON lines
-python -m generator.validate --seasons 3                       # calibration check (must stay 41/41)
+python -m generator stream --home KIR --away RAV --speed 10 --frames   # live feed: StreamMessage JSON lines
+python -m generator season --out data/season                            # fixtures, results, table
+python -m generator.validate --seasons 3 --frames 8                     # calibration check (must stay 48/48)
 docker compose up            # local stack (added on day 3)
 azd up                       # Azure (added on day 3)
 ```

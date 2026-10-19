@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint, schema, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: JSON Schemas match the contract
+        run: |
+          python -m contracts.export
+          git diff --exit-code -- schema/ || (echo "::error::schema/ is stale; run python -m contracts.export" && exit 1)
+      - name: Tests
+        run: pytest -q
+
+  validate:
+    name: Generator calibration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Validate against the real-season targets
+        run: |
+          python -m generator.validate --seasons 2 --frames 4 --json validation.json | tee validation.txt
+          {
+            echo '### Generator validation'
+            echo '```'
+            tail -n 60 validation.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: generator-validation
+          path: |
+            validation.txt
+            validation.json

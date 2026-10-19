@@ -17,6 +17,8 @@ def _ratings(rng: random.Random, n: int) -> list[TeamRatings]:
     raw = []
     for _ in range(n):
         z1, z2, z3 = rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 1)
+        # top-heavy like real top flights: the strongest clubs pull away further than the weakest fall behind
+        z1 = z1 * P.STRENGTH_SKEW_UP if z1 > 0 else z1 * P.STRENGTH_SKEW_DOWN
         a = P.ATTACK_LOG_SD * z1
         # good attacks go with good (low-conceding) defences: negative correlation in the conceded multiplier
         d = P.DEFENCE_LOG_SD * (P.ATTACK_DEFENCE_CORR * z1 + math.sqrt(1 - P.ATTACK_DEFENCE_CORR ** 2) * z2)
@@ -53,6 +55,7 @@ def _player(rng: random.Random, team_id: str, idx: int, position: str, shirt: in
         dribbling=round(_lognormal(rng, 0.15, shifts["dribbling"]), 3),
         defending=round(_lognormal(rng, 0.15, shifts["defending"]), 3),
         aerial=round(_lognormal(rng, 0.15, shifts["aerial"]), 3),
+        stamina=round(_lognormal(rng, 0.12), 3),
         top_speed_kmh=round(rng.gauss(top * P.PHYSICAL_SCALE, 1.2), 1),
         distance_m_per_min=round(rng.gauss(mpm * P.PHYSICAL_SCALE, 6), 1),
         sprints_per90=round(max(0.0, rng.gauss(sprints * P.PHYSICAL_SCALE, 2.0)), 1),

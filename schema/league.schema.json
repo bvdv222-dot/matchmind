@@ -148,6 +148,12 @@
           "title": "Aerial",
           "type": "number"
         },
+        "stamina": {
+          "description": "> 1 tires more slowly",
+          "exclusiveMinimum": 0,
+          "title": "Stamina",
+          "type": "number"
+        },
         "top_speed_kmh": {
           "title": "Top Speed Kmh",
           "type": "number"
@@ -167,6 +173,7 @@
         "dribbling",
         "defending",
         "aerial",
+        "stamina",
         "top_speed_kmh",
         "distance_m_per_min",
         "sprints_per90"

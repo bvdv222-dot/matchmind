@@ -25,5 +25,10 @@ include = ["contracts*", "generator*", "intel*", "mcp_server*", "agents*", "api*
 testpaths = ["tests"]
 
 [tool.ruff]
+extend-exclude = ["calibration"]   # one-off profiling scripts, kept as run
 line-length = 120
 target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP"]
+ignore = ["E741", "B905"]   # B905: zip over successive pairs is intentional

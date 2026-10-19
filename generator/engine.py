@@ -57,6 +57,7 @@ class OnPitch:
     player: object          # contracts.models.Player
     slot: int               # index into the formation's spots
     yellow: bool = False
+    on_minute: int = 0      # match minute the player came on
 
 
 @dataclass
@@ -150,15 +151,17 @@ class MatchSim:
 
     def meta(self) -> MatchMeta:
         def sheet(s: Side) -> TeamSheet:
-            sp = lambda p: SheetPlayer(player_id=p.player_id, name=p.name, short_name=p.short_name, shirt=p.shirt,
-                                       position=p.position)
+            def sp(p) -> SheetPlayer:
+                return SheetPlayer(player_id=p.player_id, name=p.name, short_name=p.short_name, shirt=p.shirt,
+                                   position=p.position)
             return TeamSheet(team_id=s.id, name=s.team.name, short_name=s.team.short_name, colors=s.team.colors,
                              formation=s.team.formation, starting=[sp(p) for p in self.starting[s.id]],
                              bench=[sp(p) for p in self.bench_at_start[s.id]])
         home = self.sides[0].team
         return MatchMeta(match_id=self.match_id, competition="Premier Synthetic League", season="2026/27",
                          round=self.round_no, kickoff_utc=self.kickoff_utc,
-                         venue=Venue(name=home.stadium, city=home.city), referee=names.person(random.Random(self.seed))[0],
+                         venue=Venue(name=home.stadium, city=home.city),
+                         referee=names.person(random.Random(self.seed))[0],
                          home=sheet(self.sides[0]), away=sheet(self.sides[1]), seed=self.seed,
                          generator_version=P.GENERATOR_VERSION)
 
@@ -210,6 +213,11 @@ class MatchSim:
         """Chance-volume multiplier for the side in possession (attack x opponent's conceding x home)."""
         a, d = self.att, self.dfn
         return a.attack * d.defence
+
+    def fatigue(self, op: OnPitch) -> float:
+        on = max(0, self.minute() - op.on_minute)
+        f = P.FATIGUE_AT_90 * (on / 90) ** 1.6 / op.player.attributes.stamina
+        return min(P.FATIGUE_CAP, f)
 
     def game_state(self) -> str:
         me, opp = self.score[self.poss_side], self.score[1 - self.poss_side]
@@ -308,7 +316,11 @@ class MatchSim:
         base *= min(1.0, ang / 0.35)
         if self.arrived in ("cross", "air") and in_box(self.ball):
             base *= 1.25
-        mult = self.strength() ** 1.15 * self.att.home * P.GAME_STATE_SHOTS[self.game_state()] * (0.85 if pressed else 1.0)
+        state = self.game_state()
+        mult = self.strength() ** 1.15 * self.att.home * P.GAME_STATE_SHOTS[state]
+        if self.minute() >= P.LATE_GAME_STATE["from_minute"] and state != "level":
+            mult *= P.LATE_GAME_STATE[state]
+        mult *= 0.85 if pressed else 1.0
         if self.rng.random() < min(0.9, base * mult):
             header = self.arrived in ("cross", "air") and in_box(self.ball) and self.rng.random() < 0.55
             self.shot("open_play", header=header)
@@ -350,7 +362,8 @@ class MatchSim:
             tx = min(tx, 103.0)
         return min(104.0, max(1.0, tx)), min(67.0, max(1.0, ty))
 
-    def completion(self, subtype: str, pressed: bool, length: float, passer) -> float:
+    def completion(self, subtype: str, pressed: bool, length: float, passer_op: OnPitch) -> float:
+        passer = passer_op.player
         p = P.PASS_COMPLETION.get(subtype, 0.85)
         odds = p / (1 - p)
         # pressed passes lose odds; unpressed ones gain just enough that the mix keeps the calibrated average
@@ -358,6 +371,7 @@ class MatchSim:
         med = P.PASS_MEDIAN_LENGTH.get(subtype, 15.0)
         odds *= (med / max(length, 1.0)) ** 0.5
         odds *= passer.attributes.passing * self.strength() ** 0.08
+        odds *= 1 - P.FATIGUE_PASS * self.fatigue(passer_op)
         return odds / (1 + odds)
 
     def pass_(self, subtype: str, pressed: bool = False, tags: list[str] | None = None) -> None:
@@ -368,7 +382,7 @@ class MatchSim:
         receiver = self.pick_near(self.att, target, start[0], exclude=passer)
         sp = P.BALL_SPEED_KMH.get(subtype, (45, 9))
         speed = max(15.0, self.rng.gauss(*sp))
-        self.advance(length / (speed / 3.6))
+        travel = round(length / (speed / 3.6), 2)
         tags = list(tags or [])
         if pressed:
             tags.append("under_pressure")
@@ -376,14 +390,18 @@ class MatchSim:
         off_p = P.OFFSIDE_THROUGH if subtype == "through" else (P.OFFSIDE_HIGH if subtype == "high" else 0.0)
         if off_p and target[0] > 60 and self.rng.random() < off_p:
             self.emit("pass", self.att, passer.player, start, target, subtype=subtype, outcome="offside",
-                      related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1), tags=tags)
+                      related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1), duration_s=travel,
+                      tags=tags)
+            self.advance(travel)
             self.emit("offside", self.att, receiver.player, start=target)
             self.restart("free_kick", 1 - self.poss_side, flip(target), dead_time=self.dead("offside"))
             return
-        p = self.completion(subtype, pressed, length, passer.player)
+        p = self.completion(subtype, pressed, length, passer)
         if self.rng.random() < p:
             idx = self.emit("pass", self.att, passer.player, start, target, subtype=subtype, outcome="complete",
-                            related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1), tags=tags)
+                            related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1),
+                            duration_s=travel, tags=tags)
+            self.advance(travel)
             self.last_pass_idx = idx
             arrived = "cross" if subtype in ("cross", "corner") else (
                 "air" if subtype in ("high", "launch", "goal_kick") else "ground")
@@ -394,7 +412,9 @@ class MatchSim:
             self.holder, self.ball, self.arrived = receiver, target, arrived
             return
         self.emit("pass", self.att, passer.player, start, target, subtype=subtype, outcome="incomplete",
-                  related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1), tags=tags)
+                  related_player_id=receiver.player.player_id, speed_kmh=round(speed, 1), duration_s=travel,
+                  tags=tags)
+        self.advance(travel)
         self.failed_pass(subtype, start, target)
 
     def failed_pass(self, subtype: str, start, target) -> None:
@@ -460,15 +480,18 @@ class MatchSim:
         dist = self.lognorm(7.0, 0.5)
         ang = self.rng.gauss(0, 0.7)
         end = clamp_pt(min(103.0, x + dist * math.cos(ang)), min(66.0, max(2.0, y + dist * math.sin(ang))))
-        self.advance(dist / self.rng.uniform(4.5, 7.0))
+        dur = round(math.dist((x, y), end) / self.rng.uniform(4.5, 7.0), 2)
+        tags = ["under_pressure"] if pressed else []
         if self.rng.random() < P.CARRY_LOSS * (1.5 if pressed else 1.0):
             d, dp = self.defender_near(end)
-            self.emit("carry", self.att, self.holder.player, (x, y), end, tags=["under_pressure"] if pressed else [])
+            self.emit("carry", self.att, self.holder.player, (x, y), end, duration_s=dur, tags=tags)
+            self.advance(dur)
             self.emit("tackle", self.dfn, d.player, start=dp, outcome="won",
                       related_player_id=self.holder.player.player_id)
             self.turnover(d, dp, "tackle")
             return
-        self.emit("carry", self.att, self.holder.player, (x, y), end, tags=["under_pressure"] if pressed else [])
+        self.emit("carry", self.att, self.holder.player, (x, y), end, duration_s=dur, tags=tags)
+        self.advance(dur)
         self.ball, self.arrived = end, "ground"
 
     def take_on(self) -> None:
@@ -477,8 +500,9 @@ class MatchSim:
         if self.rng.random() < P.FOUL_ON_TAKE_ON * (0.10 if in_box(self.ball) else 1.0):
             self.foul(fouled_side=self.poss_side, at=self.ball, victim=self.holder, by=d)
             return
-        odds_won = P.TAKE_ON["won"] / P.TAKE_ON["lost"] * self.holder.player.attributes.dribbling \
-            / d.player.attributes.defending * self.strength() ** 0.15
+        odds_won = P.TAKE_ON["won"] / P.TAKE_ON["lost"] * self.strength() ** 0.15 \
+            * self.holder.player.attributes.dribbling * (1 - P.FATIGUE_DUEL * self.fatigue(self.holder)) \
+            / (d.player.attributes.defending * (1 - P.FATIGUE_DUEL * self.fatigue(d)))
         r = self.rng.random()
         self.advance(self.rng.uniform(0.8, 2.0))
         if r < P.TAKE_ON["neutral"]:
@@ -514,7 +538,9 @@ class MatchSim:
             p_goal = P.DIRECT_FK_CONVERSION * shooter.player.attributes.finishing
         else:
             p_goal = xg(x, y, header) * P.XG_SCALE * shooter.player.attributes.finishing * side.quality
-        p_goal *= P.HALF_CONVERSION[self.period] if kind == "open_play" else 1.0
+        if kind == "open_play":
+            tired = sum(self.fatigue(o) for o in self.dfn.on) / max(1, len(self.dfn.on))
+            p_goal *= P.HALF_CONVERSION[self.period] * (1 + P.FATIGUE_DEFENCE_XG * tired)
         p_goal = min(0.95, p_goal)
         if kind == "open_play" and self.poss_origin in ("interception", "tackle", "recovery") \
                 and self.t - self.poss_start_t < 15:
@@ -543,8 +569,8 @@ class MatchSim:
             outcome = "saved" if self.rng.random() < 0.7 else "off_target"
         if outcome == "off_target" and self.rng.random() < P.OFF_TARGET_POST:
             outcome = "post"
-        end = goal_pt if outcome in ("saved", "post") else ((x + 3, y) if outcome == "blocked" else
-                                                            (L, W / 2 + self.rng.choice((-1, 1)) * self.rng.uniform(4, 12)))
+        wide = (L, W / 2 + self.rng.choice((-1, 1)) * self.rng.uniform(4, 12))
+        end = goal_pt if outcome in ("saved", "post") else ((x + 3, y) if outcome == "blocked" else wide)
         self.emit("shot", side, shooter.player, (x, y), end, subtype=kind, outcome=outcome, body_part=body,
                   speed_kmh=round(speed, 1), tags=tags)
         rng = self.rng
@@ -637,7 +663,7 @@ class MatchSim:
         if spare and out and side.sub_minutes:
             side.on.remove(out)
             side.bench.remove(spare)
-            side.on.append(OnPitch(spare, op.slot))
+            side.on.append(OnPitch(spare, op.slot, on_minute=self.minute()))
             side.sub_minutes.pop()
             self.emit("substitution", side, out.player, related_player_id=spare.player_id)
         side.attack *= 0.85
@@ -654,8 +680,9 @@ class MatchSim:
                 outs = [o for o in side.on if o.player.position != "GK"]
                 if not outs:
                     break
-                # attackers and midfielders come off most; tired legs are a later refinement
-                w = [3 if o.player.role == "FW" else (2 if o.player.role == "MD" else 1) for o in outs]
+                # tired legs come off first; attackers and midfielders more than defenders
+                w = [(3 if o.player.role == "FW" else (2 if o.player.role == "MD" else 1)) * (0.02 + self.fatigue(o))
+                     for o in outs]
                 out = self.rng.choices(outs, w)[0]
                 cands = [p for p in side.bench if p.position == out.player.position] or \
                         [p for p in side.bench if p.role == out.player.role and p.position != "GK"] or \
@@ -664,7 +691,7 @@ class MatchSim:
                     break
                 inn = cands[0]
                 side.bench.remove(inn)
-                new = OnPitch(inn, out.slot)
+                new = OnPitch(inn, out.slot, on_minute=self.minute())
                 side.on[side.on.index(out)] = new
                 if self.holder is out:
                     self.holder = new
@@ -724,15 +751,17 @@ class MatchSim:
         start = self.ball
         target = self.pass_target("corner")
         sp = max(20.0, self.rng.gauss(*P.BALL_SPEED_KMH["corner"]))
-        self.advance(math.dist(start, target) / (sp / 3.6))
+        travel = round(math.dist(start, target) / (sp / 3.6), 2)
         taker = self.holder
         aerial = sorted((o for o in self.att.on if o is not taker and o.player.position != "GK"),
                         key=lambda o: -o.player.attributes.aerial * o.player.height_cm)[:5]
         if self.rng.random() < direct_shot * self.strength() ** 0.5 * self.att.home:
             header = self.rng.choice(aerial)
-            idx = self.emit("pass", self.att, taker.player, start, target, subtype=kind if kind == "corner" else "cross",
+            delivery = kind if kind == "corner" else "cross"
+            idx = self.emit("pass", self.att, taker.player, start, target, subtype=delivery,
                             outcome="complete", related_player_id=header.player.player_id, speed_kmh=round(sp, 1),
-                            tags=["set_piece"] + ([sub] if sub else []))
+                            duration_s=travel, tags=["set_piece"] + ([sub] if sub else []))
+            self.advance(travel)
             self.last_pass_idx = idx
             self.holder, self.ball, self.arrived = header, target, "cross"
             self.shot("open_play", header=self.rng.random() < 0.8, tags=["set_piece"])
@@ -740,9 +769,11 @@ class MatchSim:
         recv = self.rng.choice(aerial)
         self.emit("pass", self.att, taker.player, start, target, subtype=kind if kind == "corner" else "cross",
                   outcome="incomplete", related_player_id=recv.player.player_id, speed_kmh=round(sp, 1),
-                  tags=["set_piece"] + ([sub] if sub else []))
+                  duration_s=travel, tags=["set_piece"] + ([sub] if sub else []))
+        self.advance(travel)
         self.failed_pass("corner", start, target)
 
 
-def simulate(home: Team, away: Team, seed: int, match_id: str | None = None, round_no: int = 1):
-    return MatchSim(home, away, seed, match_id, round_no).run()
+def simulate(home: Team, away: Team, seed: int, match_id: str | None = None, round_no: int = 1,
+             kickoff_utc: str | None = None):
+    return MatchSim(home, away, seed, match_id, round_no, kickoff_utc).run()
