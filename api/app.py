@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
+from collections import defaultdict, deque
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -20,23 +22,46 @@ from agents import config as agent_config
 from agents import roles
 from agents.personas import LANGUAGES
 from api import ask as ask_mod
+from api import telemetry
+from api.bus import make_bus
 from api.channel import Channel, Viewer, agents_enabled
 from api.intel_local import LocalIntel
+from api.store import make_store, record
 from mcp_server import server as tools
+
+TELEMETRY = telemetry.setup()
 
 WEB_DIST = Path(__file__).resolve().parents[1] / "web" / "dist"
 CHANNELS: dict[str, Channel] = {}
+SERVICES: dict = {}
+# the app is public (judges, demo): cap what one visitor can make the models do
+MAX_LIVE = int(os.environ.get("MM_MAX_LIVE", "4"))
+ASK_PER_MINUTE = int(os.environ.get("MM_ASK_PER_MINUTE", "8"))
+_asks: dict[str, deque] = defaultdict(deque)
+
+
+def _rate_limited(client: str) -> bool:
+    now, q = time.monotonic(), _asks[client]
+    while q and now - q[0] > 60:
+        q.popleft()
+    if len(q) >= ASK_PER_MINUTE:
+        return True
+    q.append(now)
+    return False
 _stack = AsyncExitStack()
 mcp_http = tools.server.streamable_http_app()        # match-intel over streamable HTTP, served at /intel/mcp
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    SERVICES["store"], SERVICES["bus"] = make_store(), make_bus()
     async with tools.server.session_manager.run():
         yield
         for ch in CHANNELS.values():
             ch.stop()
         await _stack.aclose()
+        await SERVICES["store"].close()
+        await SERVICES["bus"].close()
 
 
 app = FastAPI(title="MatchMind API", version="0.1.0", lifespan=lifespan)
@@ -73,7 +98,8 @@ def health() -> dict:
 
 @app.get("/api/config")
 def get_config() -> dict:
-    return {"agents": agents_enabled(), "models": agent_config.describe(), "languages": {"en": "English", **LANGUAGES}}
+    return {"agents": agents_enabled(), "models": agent_config.describe(), "languages": {"en": "English", **LANGUAGES},
+            "store": SERVICES["store"].kind, "bus": SERVICES["bus"].kind, "telemetry": TELEMETRY}
 
 
 @app.get("/api/fixtures")
@@ -117,9 +143,13 @@ async def start(req: StartRequest) -> dict:
     except KeyError as e:
         raise HTTPException(404, str(e)) from e
     if fx.match_id not in CHANNELS:
+        live = [c for c in CHANNELS.values() if not (c._last_state or {}).get("finished")]
+        if len(live) >= MAX_LIVE:
+            raise HTTPException(429, f"{len(live)} matches are already live; join one of them: "
+                                     + ", ".join(c.match_id for c in live))
         run = await asyncio.to_thread(reg.start, fx, req.speed, True)
         langs = [x for x in req.languages if x in LANGUAGES][:3]
-        ch = Channel(run, langs, agents_enabled())
+        ch = Channel(run, langs, agents_enabled(), store=SERVICES["store"], bus=SERVICES["bus"])
         port = os.environ.get("MM_PORT", "8000")
         agents = await _agents(os.environ.get("MM_SELF_MCP_URL", f"http://127.0.0.1:{port}/intel/mcp"))
         ch.start(LocalIntel(), agents, _names(fx.home, fx.away))
@@ -177,12 +207,19 @@ def agent_log(match_id: str) -> dict:
 
 
 @app.post("/api/matches/{match_id}/ask")
-async def ask(match_id: str, req: ask_mod.AskRequest) -> dict:
+async def ask(match_id: str, req: ask_mod.AskRequest, request: Request) -> dict:
     ch = _channel(match_id)
+    client = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0]
+    if _rate_limited(client.strip()):
+        raise HTTPException(429, f"Up to {ASK_PER_MINUTE} questions a minute, please")
     lines = await asyncio.to_thread(ask_mod.context_lines, tools, match_id, req)
     with ch.run.lock:
         st = ch.run.live.state()
-    return await ask_mod.answer(req, lines, st, ch.names, ch.agents_on)
+    res = await ask_mod.answer(req, lines, st, ch.names, ch.agents_on)
+    await ch.store.put("asks", record(match_id, "ask", clock=st.get("clock"), question=req.question, tab=req.tab,
+                                      persona=req.persona, lang=req.lang, answer=res["answer"], source=res["source"],
+                                      problems=res.get("problems", []), context_sent=res["context_sent"]))
+    return res
 
 
 # ------------------------------------------------------------------ WebSocket

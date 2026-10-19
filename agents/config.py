@@ -22,8 +22,9 @@ class Provider:
 def provider() -> Provider:
     name = os.environ.get("MM_AI_PROVIDER", "ollama").lower()
     if name == "foundry":
-        return Provider("foundry", os.environ.get("FOUNDRY_FAST_DEPLOYMENT", ""),
-                        os.environ.get("FOUNDRY_STRONG_DEPLOYMENT", ""))
+        fast = os.environ.get("FOUNDRY_FAST_DEPLOYMENT", "")
+        # until a strong deployment (e.g. Claude via the Marketplace) exists, the Analyst uses the fast model
+        return Provider("foundry", fast, os.environ.get("FOUNDRY_STRONG_DEPLOYMENT") or fast)
     # one 7B model for both tiers by default: an 8 GB GPU can't hold 7B and 14B together, and swapping costs ~10 s
     return Provider("ollama", os.environ.get("MM_OLLAMA_FAST", "qwen2.5:7b-instruct"),
                     os.environ.get("MM_OLLAMA_STRONG", "qwen2.5:7b-instruct"))

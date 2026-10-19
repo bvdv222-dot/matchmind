@@ -28,7 +28,7 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 | `api/` | FastAPI: REST views, live WebSocket feed, agent worker, ask-this-view, match-intel MCP at `/intel/mcp`, serves `web/dist` ([docs/API_AND_WEB.md](docs/API_AND_WEB.md)) |
 | `web/` | React 18 + Vite + TypeScript front end: broadcast, analyst, player focus, agents views (hand-built SVG, no UI libraries) |
 | `evals/` | Eval sets and runners (Foundry evaluations + number-check pass rate) |
-| `infra/` | Bicep for `azd` |
+| `infra/` | Bicep for `azd`: Container Apps, ACR (remote build), managed identity, Foundry, Event Hubs, Cosmos DB, Web PubSub, App Insights, budget ([docs/DEPLOY.md](docs/DEPLOY.md)) |
 | `calibration/` | Generator calibration parameters and the scripts that produced them |
 
 ## Conventions
@@ -53,6 +53,5 @@ python -m mcp_server                                                    # match-
 python -m agents run --home KIR --away NET --langs es --max-notes 8         # agents on a live match (Ollama locally)
 python -m api                                                           # API + web app on :8000 (build web/ first)
 cd web && npm run build                                                 # or npm run dev for hot reload on :5173
-docker compose up            # local stack (added on day 3)
-azd up                       # Azure (added on day 3)
+azd up                                                                  # Azure: provision + remote image build + deploy (no local Docker)
 ```

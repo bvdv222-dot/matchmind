@@ -15,10 +15,13 @@ from fastapi import WebSocket
 
 from agents.personas import Persona, default_personas
 from agents.workflow import Trigger, build_workflow
+from api.bus import MemoryBus
+from api.store import MemoryStore, record
 from intel import facts
 from mcp_server.registry import Running
 
 TICK_S = 0.25
+FRAME_SAMPLE = 4             # publish every 4th frame to the bus (2 Hz match time is plenty for consumers)
 TRIGGER_PRIORITY = 5
 QUIET_MINUTES = 15
 STALE_MINUTES = 6            # a moment older than this when the agents get to it is folded into the next note
@@ -53,6 +56,11 @@ class Channel:
     _task: asyncio.Task | None = None
     _agent_task: asyncio.Task | None = None
     _queue: asyncio.Queue = field(default_factory=asyncio.Queue)
+    store: object = field(default_factory=MemoryStore)
+    bus: object = field(default_factory=MemoryBus)
+    _event_i: int = 0
+    _frames_seen: int = 0
+    _bg: set = field(default_factory=set)
 
     @property
     def match_id(self) -> str:
@@ -125,24 +133,40 @@ class Channel:
                 frame = lm.last_frame
                 new_moments = lm.moments[self._moment_i:]
                 self._moment_i = len(lm.moments)
+                new_events = lm.events[self._event_i:]
+                self._event_i = len(lm.events)
                 wp = lm.win_probability()
+            to_bus = [{"kind": "event", "data": e} for e in new_events]
             if frame and (frame["period"], frame["t"]) != self._last_frame_t:
                 self._last_frame_t = (frame["period"], frame["t"])
                 await self.broadcast({"type": "frame", "data": frame})
+                self._frames_seen += 1
+                if self._frames_seen % FRAME_SAMPLE == 0:
+                    to_bus.append({"kind": "frame", "data": frame})
             if state != self._last_state:
                 self._last_state = state
                 await self.broadcast({"type": "state", "data": {**state, "win_probability": wp}})
+                to_bus.append({"kind": "state", "data": {**state, "win_probability": wp}})
             for m in new_moments:
                 o = self._moment_overlay(m)
                 if o:
                     self.overlays.append(o)
                     await self.broadcast({"type": "overlay", "data": o})
+                    to_bus.append({"kind": "overlay", "data": o})
                 if m["priority"] >= TRIGGER_PRIORITY:
                     self._pending.append(m)
+            if to_bus:
+                self._background(self.bus.publish(self.match_id, to_bus))
             await self._maybe_trigger(state)
             if state.get("finished") and self._full_time_sent and not self._busy and self._queue.empty():
                 await self.broadcast({"type": "finished", "data": state})
                 return
+
+    def _background(self, coro) -> None:
+        """Bus and store writes run alongside the broadcast, never in its way."""
+        task = asyncio.create_task(coro)
+        self._bg.add(task)
+        task.add_done_callback(self._bg.discard)
 
     def _moment_overlay(self, m: dict) -> dict | None:
         lm = self.run.live
@@ -212,6 +236,13 @@ class Channel:
                                    "skipped": job.skipped, "seconds": round(time.monotonic() - t0, 1),
                                    "note_source": job.note_source, "trace": job.trace})
             del self.agent_log[:-50]
+            self._background(self.store.put("notes", record(
+                self.match_id, "note", clock=job.state.get("clock"), note_kind=kind, reason=reason,
+                skipped=job.skipped, plan=job.plan, note=job.note, note_source=job.note_source, trace=job.trace,
+                overlays=job.overlays)))
+            if job.overlays:
+                self._background(self.bus.publish(self.match_id, [{"kind": "overlay", "data": o}
+                                                                  for o in job.overlays]))
             if not job.skipped and job.overlays:
                 # the quiet-period clock restarts only when something was actually said
                 self._last_note_min = job.state.get("minute", self._last_note_min)

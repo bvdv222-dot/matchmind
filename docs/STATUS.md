@@ -35,4 +35,5 @@ Next
 - Budget alert, resource group, Foundry project + OpenAI deployment + Claude (Marketplace) deployment, smoke-test both.
 - Walking-skeleton deploy once Azure is ready: Container Apps (generator job, intel + MCP over HTTP), Event Hubs, Cosmos DB, App Insights via `azd up`; registry reads the bus instead of replaying in-process.
 - Switch agents to Foundry models; Foundry evaluations on a fixed eval set (incl. refusal cases); tracing to App Insights.
-- Containerise (api + web in one image), `azd` Bicep (Container Apps, Event Hubs, Cosmos, App Insights, Web PubSub), CI job for the web build.
+- Once the account is ready: `azd up` (runbook steps 1-5), check `/api/config`, run a match on Foundry models; optional Claude strong tier.
+- Then: Foundry evaluations on a fixed eval set; demo video; README polish.

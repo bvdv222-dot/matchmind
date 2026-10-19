@@ -81,3 +81,21 @@ jobs:
       - name: Type-check and build
         working-directory: web
         run: npm run build
+
+  image:
+    name: Container image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image (the same Dockerfile Azure builds remotely)
+        run: docker build -t matchmind:ci .
+      - name: Smoke-test the container
+        run: |
+          docker run -d --name mm -p 8000:8000 -e MM_AGENTS=off matchmind:ci
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/api/health && break; sleep 2; done
+          curl -sf http://127.0.0.1:8000/api/health
+          curl -sf http://127.0.0.1:8000/ | grep -q "<div id=\"root\">"
+          curl -sf "http://127.0.0.1:8000/api/fixtures?round=1" | grep -q match_id
+          docker logs mm | tail -20

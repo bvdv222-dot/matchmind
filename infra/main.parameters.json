@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": { "value": "${AZURE_ENV_NAME}" },
+    "location": { "value": "${AZURE_LOCATION}" },
+    "principalId": { "value": "${AZURE_PRINCIPAL_ID}" },
+    "appExists": { "value": "${SERVICE_APP_RESOURCE_EXISTS=false}" },
+    "deployFoundry": { "value": "${MM_DEPLOY_FOUNDRY=true}" },
+    "fastModelName": { "value": "${MM_FAST_MODEL=gpt-4.1-mini}" },
+    "fastModelVersion": { "value": "${MM_FAST_MODEL_VERSION=2025-04-14}" },
+    "fastModelCapacity": { "value": "${MM_FAST_MODEL_CAPACITY=50}" },
+    "strongDeploymentName": { "value": "${MM_STRONG_DEPLOYMENT=}" },
+    "eventHubsSku": { "value": "${MM_EVENTHUBS_SKU=Basic}" },
+    "budgetAmount": { "value": "${MM_BUDGET_AMOUNT=100}" },
+    "budgetEmail": { "value": "${MM_BUDGET_EMAIL=}" }
+  }
+}
