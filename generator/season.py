@@ -79,20 +79,26 @@ def fixtures(league: League, seed: int | None = None) -> list[Fixture]:
     return out
 
 
+def match_seed(league: League, k: int, season_offset: int = 0) -> int:
+    return league.seed * 1000 + k + season_offset * 100_003
+
+
 def table(rows: dict[str, Row]) -> list[Row]:
     return sorted(rows.values(), key=lambda r: (-r.points, -r.gd, -r.gf, r.team_id))
 
 
-def play_season(league: League, rounds: int | None = None, keep_events: bool = False):
+def play_season(league: League, rounds: int | None = None, keep_events: bool = False, season_offset: int = 0):
     """Simulate the season (or its first `rounds` rounds). Returns (fixtures, results, table, matches) where
-    matches holds (meta, events) per fixture only when keep_events is set."""
+    matches holds (meta, events) per fixture only when keep_events is set. season_offset = -1 replays the same clubs
+    with different match seeds: "last season", the history the analysis layer learns team strength from."""
     teams = {t.team_id: t for t in league.teams}
     rows = {tid: Row(tid) for tid in teams}
     results, matches = [], []
     for k, fx in enumerate(fixtures(league)):
         if rounds is not None and fx.round > rounds:
             break
-        meta, events = simulate(teams[fx.home], teams[fx.away], seed=league.seed * 1000 + k, match_id=fx.match_id,
+        meta, events = simulate(teams[fx.home], teams[fx.away], seed=match_seed(league, k, season_offset),
+                                match_id=fx.match_id if season_offset == 0 else f"{fx.match_id}-S{season_offset}",
                                 round_no=fx.round, kickoff_utc=fx.kickoff_utc)
         hg = sum(1 for e in events if e["type"] == "shot" and e.get("outcome") == "goal" and e["team_id"] == fx.home)
         ag = sum(1 for e in events if e["type"] == "shot" and e.get("outcome") == "goal" and e["team_id"] == fx.away)
@@ -116,6 +122,6 @@ def play_season(league: League, rounds: int | None = None, keep_events: bool = F
 def meta_for(league: League, fx: Fixture) -> MatchMeta:
     teams = {t.team_id: t for t in league.teams}
     k = [f.match_id for f in fixtures(league)].index(fx.match_id)
-    meta, _ = simulate(teams[fx.home], teams[fx.away], seed=league.seed * 1000 + k, match_id=fx.match_id,
+    meta, _ = simulate(teams[fx.home], teams[fx.away], seed=match_seed(league, k), match_id=fx.match_id,
                        round_no=fx.round, kickoff_utc=fx.kickoff_utc)
     return meta

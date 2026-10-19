@@ -1,0 +1,20 @@
+{
+ "chaos_per_min": 3.0794,
+ "team_match_means": {
+  "xg": 1.3411,
+  "shots": 11.8842,
+  "passes": 451.125,
+  "pass_completion": 0.8052,
+  "possession_share": 0.5,
+  "field_tilt": 0.5,
+  "progressive_passes": 73.0789,
+  "ppda": 10.6015,
+  "pressures": 158.5796,
+  "crosses": 31.1895,
+  "big_chances": 1.0954,
+  "long_ball_share": 0.1469,
+  "take_ons": 26.2349,
+  "corners": 4.7599
+ },
+ "matches": 760
+}

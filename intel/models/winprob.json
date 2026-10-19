@@ -1,0 +1,66 @@
+{
+ "params": {
+  "live_weight_full": 0.0,
+  "red_card_for": 0.75,
+  "red_card_against": 1.25,
+  "trailing_push": 1.15,
+  "leading_sit": 0.85
+ },
+ "evaluation": {
+  "brier_all_snapshots": 0.45,
+  "brier_prematch": 0.6175,
+  "brier_prematch_constant_rates": 0.6422,
+  "home_win_calibration": [
+   {
+    "predicted": 0.016,
+    "actual": 0.008
+   },
+   {
+    "predicted": 0.106,
+    "actual": 0.118
+   },
+   {
+    "predicted": 0.21,
+    "actual": 0.244
+   },
+   {
+    "predicted": 0.296,
+    "actual": 0.312
+   },
+   {
+    "predicted": 0.363,
+    "actual": 0.376
+   },
+   {
+    "predicted": 0.436,
+    "actual": 0.43
+   },
+   {
+    "predicted": 0.541,
+    "actual": 0.566
+   },
+   {
+    "predicted": 0.719,
+    "actual": 0.731
+   },
+   {
+    "predicted": 0.839,
+    "actual": 0.84
+   },
+   {
+    "predicted": 0.972,
+    "actual": 0.966
+   }
+  ],
+  "snapshots": [
+   0,
+   15,
+   30,
+   45,
+   60,
+   75,
+   85
+  ],
+  "matches": 760
+ }
+}

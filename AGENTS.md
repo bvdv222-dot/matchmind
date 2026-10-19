@@ -22,8 +22,8 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 | `contracts/` | Pydantic models for the data contract (league, match metadata, events, position frames, overlays). Change these first, then run `python -m contracts.export`. |
 | `schema/` | JSON Schemas exported from `contracts/` (don't hand-edit). |
 | `generator/` | Synthetic league, season fixtures, match engine, position frames, live feed, validation against the calibration file ([docs/GENERATOR.md](docs/GENERATOR.md)) |
-| `intel/` | Possessions, xG, possession value, phases, tempo, networks, win probability, expectation baselines, fact sheets |
-| `mcp_server/` | MCP server exposing `intel/` as tools |
+| `intel/` | Possessions, xG, possession value, phases, rhythm, networks, win probability, expectation baselines, shifts, moments, fact sheets ([docs/INTEL.md](docs/INTEL.md)); models in `intel/models/` |
+| `mcp_server/` | match-intel MCP server exposing `intel/` as 12 tools (stdio + streamable HTTP) |
 | `agents/` | Microsoft Agent Framework workflow: Analyst, Narrator, Verifier, Personaliser, Translator |
 | `api/` | FastAPI: REST, WebSocket / Web PubSub broadcaster, personas, "ask about this view" |
 | `web/` | React + Vite + TypeScript front end |
@@ -48,6 +48,8 @@ pytest
 python -m generator stream --home KIR --away RAV --speed 10 --frames   # live feed: StreamMessage JSON lines
 python -m generator season --out data/season                            # fixtures, results, table
 python -m generator.validate --seasons 3 --frames 8                     # calibration check (must stay 48/48)
+python -m intel.train                                                   # rebuild intel/models after generator changes
+python -m mcp_server                                                    # match-intel MCP server (stdio)
 docker compose up            # local stack (added on day 3)
 azd up                       # Azure (added on day 3)
 ```

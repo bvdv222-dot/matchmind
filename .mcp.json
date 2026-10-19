@@ -2,7 +2,19 @@
   "mcpServers": {
     "azure": {
       "command": "npx",
-      "args": ["-y", "@azure/mcp@latest", "server", "start"]
+      "args": [
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ]
+    },
+    "match-intel": {
+      "command": ".venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "mcp_server"
+      ]
     }
   }
 }

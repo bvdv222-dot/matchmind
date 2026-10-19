@@ -8,6 +8,7 @@ dependencies = [
     "numpy>=2.0",
     "pydantic>=2.7",
     "jsonschema>=4.22",
+    "mcp==2.3.0",
 ]
 
 [project.optional-dependencies]
@@ -20,6 +21,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["contracts*", "generator*", "intel*", "mcp_server*", "agents*", "api*"]
+
+[tool.setuptools.package-data]
+intel = ["models/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -112,7 +112,7 @@ TAKE_ON = {"won": 0.486, "lost": 0.224, "neutral": 0.290}  # CALIBRATED (ground 
 CARRY_LOSS = 0.03             # ASSUMED
 
 # Shots: per-touch shot propensity by distance band (m), ASSUMED and tuned so band shares match CALIBRATED ones.
-SHOT_PROPENSITY = [(6, 0.047), (11, 0.088), (16.5, 0.146), (22, 0.13), (30, 0.11), (36, 0.042)]
+SHOT_PROPENSITY = [(6, 0.027), (11, 0.08), (16.5, 0.146), (22, 0.132), (30, 0.115), (36, 0.044)]
 SHOT_OUTCOME_GIVEN_MISS = {"saved": 0.275, "blocked": 0.30, "off_target": 0.425}   # CALIBRATED (rescaled)
 SAVE_RESULT = {"held": 0.62, "corner": 0.12, "loose": 0.26}                          # ASSUMED
 BLOCK_RESULT = {"corner": 0.25, "loose": 0.75}                                        # ASSUMED
@@ -127,7 +127,7 @@ CORNER_SECOND_BALL = 0.35
 FK_CROSS_DIRECT_SHOT = 0.15
 DIRECT_FK_CONVERSION = 0.051
 PENALTY_CONVERSION = 0.70
-XG_SCALE = 0.765              # ASSUMED: absorbs the within-band location mix vs real shots; re-check on changes
+XG_SCALE = 0.81               # ASSUMED: absorbs the within-band location mix vs real shots; re-check on changes
 BOOKED_CAUTION = 0.22         # ASSUMED: booked players foul less recklessly (second yellows are rare)
 
 # Fouls & discipline: CALIBRATED rates, ASSUMED split across situations.

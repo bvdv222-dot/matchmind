@@ -294,7 +294,7 @@ def build_frames(meta: MatchMeta, events: list[dict], teams: dict[str, Team], se
             if not alive[i, c]:
                 continue
             pid = roster[occupant[i, c]]
-            dist_by_player[pid] = dist_by_player.get(pid, 0.0) + step[i, c]
+            dist_by_player[pid] = dist_by_player.get(pid, 0.0) + float(step[i, c])
             out_players.append({"player_id": pid, "team_id": str(team_of_col[c]), "x": round(float(pos[i, c, 0]), 1),
                                 "y": round(float(pos[i, c, 1]), 1), "speed_kmh": round(float(speed[i, c]), 1),
                                 "distance_m": round(dist_by_player[pid], 1)})
