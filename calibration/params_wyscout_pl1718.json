@@ -1,0 +1,885 @@
+{
+ "source": "Wyscout soccer-logs (Pappalardo et al. 2019), Premier League 2017/18, CC BY 4.0",
+ "matches": 380,
+ "per_match": {
+  "Pass": {
+   "mean": 864.89,
+   "sd": 121.58
+  },
+  "Duel": {
+   "mean": 464.97,
+   "sd": 66.38
+  },
+  "Others on the ball": {
+   "mean": 134.43,
+   "sd": 22.14
+  },
+  "Free Kick": {
+   "mean": 95.85,
+   "sd": 12.22
+  },
+  "Interruption": {
+   "mean": 72.46,
+   "sd": 12.13
+  },
+  "Shot": {
+   "mean": 22.24,
+   "sd": 5.01
+  },
+  "Foul": {
+   "mean": 21.42,
+   "sd": 5.13
+  },
+  "Save attempt": {
+   "mean": 8.81,
+   "sd": 3.11
+  },
+  "Offside": {
+   "mean": 4.1,
+   "sd": 2.32
+  },
+  "Goalkeeper leaving line": {
+   "mean": 3.33,
+   "sd": 2.12
+  }
+ },
+ "per_match_subevent": {
+  "Simple pass": {
+   "mean": 661.59,
+   "sd": 137.8
+  },
+  "Ground attacking duel": {
+   "mean": 141.73,
+   "sd": 22.29
+  },
+  "Ground defending duel": {
+   "mean": 141.41,
+   "sd": 22.58
+  },
+  "Air duel": {
+   "mean": 99.37,
+   "sd": 33.77
+  },
+  "Touch": {
+   "mean": 90.55,
+   "sd": 18.32
+  },
+  "Ground loose ball duel": {
+   "mean": 82.45,
+   "sd": 21.79
+  },
+  "Ball out of the field": {
+   "mean": 71.92,
+   "sd": 12.1
+  },
+  "High pass": {
+   "mean": 65.97,
+   "sd": 12.24
+  },
+  "Head pass": {
+   "mean": 56.14,
+   "sd": 15.46
+  },
+  "Throw in": {
+   "mean": 44.87,
+   "sd": 9.9
+  },
+  "Cross": {
+   "mean": 32.24,
+   "sd": 7.23
+  },
+  "Clearance": {
+   "mean": 31.01,
+   "sd": 8.53
+  },
+  "Launch": {
+   "mean": 26.97,
+   "sd": 10.33
+  },
+  "Shot": {
+   "mean": 22.24,
+   "sd": 5.01
+  },
+  "Foul": {
+   "mean": 19.79,
+   "sd": 4.82
+  },
+  "Free Kick": {
+   "mean": 19.16,
+   "sd": 4.77
+  },
+  "Goal kick": {
+   "mean": 15.95,
+   "sd": 3.85
+  },
+  "Smart pass": {
+   "mean": 15.48,
+   "sd": 6.67
+  },
+  "Acceleration": {
+   "mean": 12.87,
+   "sd": 5.74
+  },
+  "Corner": {
+   "mean": 10.29,
+   "sd": 3.34
+  },
+  "Hand pass": {
+   "mean": 6.51,
+   "sd": 3.06
+  },
+  "Reflexes": {
+   "mean": 5.59,
+   "sd": 2.61
+  },
+  "Free kick cross": {
+   "mean": 4.46,
+   "sd": 2.4
+  },
+  "Offside": {
+   "mean": 4.1,
+   "sd": 2.32
+  },
+  "Goalkeeper leaving line": {
+   "mean": 3.33,
+   "sd": 2.12
+  },
+  "Save attempt": {
+   "mean": 3.22,
+   "sd": 1.81
+  },
+  "Free kick shot": {
+   "mean": 0.92,
+   "sd": 0.92
+  },
+  "Hand foul": {
+   "mean": 0.72,
+   "sd": 0.8
+  },
+  "Whistle": {
+   "mean": 0.54,
+   "sd": 0.82
+  }
+ },
+ "results": {
+  "home_goals_mean": 1.532,
+  "away_goals_mean": 1.147,
+  "home_win": 0.455,
+  "draw": 0.261,
+  "away_win": 0.284,
+  "top_scorelines": {
+   "1-1": 0.118,
+   "1-0": 0.116,
+   "0-0": 0.084,
+   "2-1": 0.084,
+   "2-0": 0.071,
+   "1-2": 0.063,
+   "0-1": 0.061,
+   "2-2": 0.05,
+   "0-2": 0.039,
+   "3-0": 0.039,
+   "3-1": 0.034,
+   "0-3": 0.032
+  },
+  "total_goals_dist": {
+   "0": 0.084,
+   "1": 0.176,
+   "2": 0.229,
+   "3": 0.218,
+   "4": 0.139,
+   "5": 0.111,
+   "6": 0.026,
+   "7": 0.011,
+   "9": 0.005
+  }
+ },
+ "timing": {
+  "event_gap_s": {
+   "median": 2.02,
+   "p05": 0.05,
+   "p95": 10.18,
+   "mean": 3.41
+  },
+  "half_length_min": {
+   "1H": {
+    "median": 46.9,
+    "p90": 48.5
+   },
+   "2H": {
+    "median": 49.1,
+    "p90": 51.1
+   }
+  },
+  "shots_by_window": {
+   "0-15": 0.133,
+   "15-30": 0.155,
+   "30-45": 0.157,
+   "45+": 0.021,
+   "45-60": 0.159,
+   "60-75": 0.161,
+   "75-90": 0.166,
+   "90+": 0.049
+  },
+  "goals_by_window": {
+   "0-15": 0.117,
+   "15-30": 0.145,
+   "30-45": 0.133,
+   "45+": 0.026,
+   "45-60": 0.17,
+   "60-75": 0.185,
+   "75-90": 0.177,
+   "90+": 0.048
+  }
+ },
+ "possessions": {
+  "definition": "run of on-ball events by one team; ends when the opponent takes control (accurate pass, shot, restart, carry) - duels, fouls, clearances and failed passes alone don't end it",
+  "per_match": 156.1,
+  "on_ball_events": {
+   "median": 4,
+   "p90": 15.0
+  },
+  "duration_s": {
+   "median": 11.5,
+   "p10": 0.0,
+   "p90": 66.6
+  },
+  "ends_in_shot": 0.1274,
+  "by_start": {
+   "Open play": {
+    "share": 0.564,
+    "shot_rate": 0.1443,
+    "goal_rate": 0.0193
+   },
+   "Interception": {
+    "share": 0.139,
+    "shot_rate": 0.1265,
+    "goal_rate": 0.0174
+   },
+   "Throw in": {
+    "share": 0.123,
+    "shot_rate": 0.0937,
+    "goal_rate": 0.0097
+   },
+   "Goal kick": {
+    "share": 0.099,
+    "shot_rate": 0.0722,
+    "goal_rate": 0.0099
+   },
+   "Free Kick": {
+    "share": 0.068,
+    "shot_rate": 0.1052,
+    "goal_rate": 0.0125
+   },
+   "Free kick cross": {
+    "share": 0.004,
+    "shot_rate": 0.2808,
+    "goal_rate": 0.0346
+   },
+   "Corner": {
+    "share": 0.002,
+    "shot_rate": 0.3932,
+    "goal_rate": 0.0171
+   },
+   "Free kick shot": {
+    "share": 0.001,
+    "shot_rate": 1.0,
+    "goal_rate": 0.0606
+   },
+   "Penalty": {
+    "share": 0.0,
+    "shot_rate": 1.0,
+    "goal_rate": 0.5
+   }
+  },
+  "shot_rate_by_start_third": {
+   "def": {
+    "share": 0.393,
+    "shot_rate": 0.1058
+   },
+   "mid": {
+    "share": 0.264,
+    "shot_rate": 0.1559
+   },
+   "att": {
+    "share": 0.046,
+    "shot_rate": 0.3537
+   }
+  },
+  "counter_attacks": {
+   "per_match": 5.19,
+   "shot_rate": 0.382
+  }
+ },
+ "set_pieces": {
+  "Throw in": {
+   "per_match": 28.72,
+   "shot_within_15s": 0.014,
+   "goal_within_15s": 0.0015
+  },
+  "Free Kick": {
+   "per_match": 19.16,
+   "shot_within_15s": 0.038,
+   "goal_within_15s": 0.0036
+  },
+  "Throw in (final third)": {
+   "per_match": 16.14,
+   "shot_within_15s": 0.062,
+   "goal_within_15s": 0.0044
+  },
+  "Goal kick": {
+   "per_match": 15.95,
+   "shot_within_15s": 0.013,
+   "goal_within_15s": 0.001
+  },
+  "Corner": {
+   "per_match": 10.29,
+   "shot_within_15s": 0.297,
+   "goal_within_15s": 0.0271
+  },
+  "Free kick cross": {
+   "per_match": 4.46,
+   "shot_within_15s": 0.228,
+   "goal_within_15s": 0.0219
+  }
+ },
+ "transitions_top": {
+  "Simple pass": {
+   "Simple pass": 0.633,
+   "High pass": 0.063,
+   "Ground attacking duel": 0.048,
+   "Touch": 0.045,
+   "Ground defending duel (opp)": 0.041,
+   "Simple pass (opp)": 0.03
+  },
+  "High pass": {
+   "Head pass (opp)": 0.139,
+   "Simple pass": 0.138,
+   "Simple pass (opp)": 0.09,
+   "Air duel (opp)": 0.059,
+   "Ground attacking duel": 0.055,
+   "Air duel": 0.052
+  },
+  "Head pass": {
+   "Simple pass": 0.216,
+   "Simple pass (opp)": 0.128,
+   "Head pass (opp)": 0.092,
+   "Head pass": 0.059,
+   "Ground attacking duel": 0.047,
+   "Air duel (opp)": 0.044
+  },
+  "Air duel": {
+   "Air duel (opp)": 0.518,
+   "Simple pass (opp)": 0.064,
+   "Simple pass": 0.058,
+   "Head pass": 0.033,
+   "Head pass (opp)": 0.03,
+   "Air duel": 0.029
+  },
+  "Ground loose ball duel": {
+   "Ground loose ball duel (opp)": 0.495,
+   "Simple pass (opp)": 0.083,
+   "Simple pass": 0.079,
+   "Head pass (opp)": 0.038,
+   "Head pass": 0.033,
+   "Ground attacking duel (opp)": 0.02
+  },
+  "Smart pass": {
+   "Simple pass (opp)": 0.18,
+   "Touch (opp)": 0.154,
+   "Simple pass": 0.07,
+   "Cross": 0.07,
+   "Clearance (opp)": 0.069,
+   "Ground attacking duel": 0.058
+  },
+  "Launch": {
+   "Head pass (opp)": 0.184,
+   "Air duel (opp)": 0.147,
+   "Air duel": 0.126,
+   "Simple pass (opp)": 0.115,
+   "Ground loose ball duel": 0.06,
+   "Ground loose ball duel (opp)": 0.06
+  },
+  "Ground defending duel": {
+   "Ground attacking duel (opp)": 0.489,
+   "Simple pass (opp)": 0.156,
+   "Simple pass": 0.061,
+   "Free Kick (opp)": 0.041,
+   "Cross (opp)": 0.035,
+   "Ground defending duel": 0.025
+  },
+  "Ground attacking duel": {
+   "Ground defending duel (opp)": 0.56,
+   "Simple pass": 0.133,
+   "Simple pass (opp)": 0.055,
+   "Free Kick": 0.033,
+   "Cross": 0.029,
+   "Ground attacking duel": 0.022
+  },
+  "Free Kick": {
+   "Simple pass": 0.449,
+   "Air duel (opp)": 0.091,
+   "Air duel": 0.088,
+   "Head pass (opp)": 0.052,
+   "High pass": 0.042,
+   "Touch": 0.031
+  },
+  "Cross": {
+   "Clearance (opp)": 0.246,
+   "Touch (opp)": 0.232,
+   "Shot": 0.059,
+   "Air duel": 0.058,
+   "Air duel (opp)": 0.057,
+   "Simple pass (opp)": 0.05
+  },
+  "Shot": {
+   "Goal kick (opp)": 0.338,
+   "Touch (opp)": 0.258,
+   "Simple pass (opp)": 0.098,
+   "Corner": 0.045,
+   "Clearance (opp)": 0.041,
+   "Launch (opp)": 0.031
+  },
+  "Touch": {
+   "Simple pass": 0.29,
+   "Simple pass (opp)": 0.13,
+   "Throw in (opp)": 0.088,
+   "Corner (opp)": 0.048,
+   "Ground defending duel (opp)": 0.038,
+   "Ground loose ball duel (opp)": 0.038
+  },
+  "Clearance": {
+   "Throw in (opp)": 0.334,
+   "Simple pass (opp)": 0.18,
+   "Corner (opp)": 0.084,
+   "Head pass (opp)": 0.044,
+   "Touch (opp)": 0.037,
+   "Shot (opp)": 0.033
+  },
+  "Throw in": {
+   "Simple pass": 0.498,
+   "Ground attacking duel": 0.078,
+   "Ground defending duel (opp)": 0.068,
+   "Head pass (opp)": 0.045,
+   "Air duel (opp)": 0.044,
+   "Air duel": 0.039
+  },
+  "Goal kick": {
+   "Air duel (opp)": 0.183,
+   "Air duel": 0.181,
+   "Simple pass": 0.166,
+   "Head pass (opp)": 0.091,
+   "Ground loose ball duel (opp)": 0.055,
+   "Ground loose ball duel": 0.055
+  },
+  "Corner": {
+   "Clearance (opp)": 0.212,
+   "Air duel": 0.174,
+   "Air duel (opp)": 0.171,
+   "Simple pass": 0.121,
+   "Shot": 0.047,
+   "Ground loose ball duel": 0.041
+  },
+  "Hand pass": {
+   "Simple pass": 0.654,
+   "Touch": 0.135,
+   "High pass": 0.074,
+   "Acceleration": 0.049,
+   "Ground attacking duel": 0.023,
+   "Ground defending duel (opp)": 0.017
+  },
+  "Acceleration": {
+   "Simple pass": 0.457,
+   "Ground attacking duel": 0.168,
+   "Ground defending duel (opp)": 0.165,
+   "Smart pass": 0.062,
+   "Cross": 0.055,
+   "Shot": 0.026
+  }
+ },
+ "turnover_after": {
+  "Simple pass": 0.082,
+  "High pass": 0.614,
+  "Head pass": 0.455,
+  "Smart pass": 0.702,
+  "Free Kick": 0.182,
+  "Cross": 0.844,
+  "Touch": 0.479,
+  "Clearance": 0.885,
+  "Shot": 0.87,
+  "Goal kick": 0.392,
+  "Corner": 0.546,
+  "Hand pass": 0.027,
+  "Throw in": 0.148,
+  "Acceleration": 0.031,
+  "Launch": 0.836
+ },
+ "passes": {
+  "by_zone": {
+   "att-C": {
+    "per_match": 43.1,
+    "completion": 0.796,
+    "len_m_median": 14.2
+   },
+   "att-L": {
+    "per_match": 85.4,
+    "completion": 0.752,
+    "len_m_median": 14.0
+   },
+   "att-R": {
+    "per_match": 83.2,
+    "completion": 0.743,
+    "len_m_median": 14.2
+   },
+   "def-C": {
+    "per_match": 99.4,
+    "completion": 0.84,
+    "len_m_median": 22.2
+   },
+   "def-L": {
+    "per_match": 72.3,
+    "completion": 0.807,
+    "len_m_median": 18.2
+   },
+   "def-R": {
+    "per_match": 72.5,
+    "completion": 0.791,
+    "len_m_median": 18.4
+   },
+   "mid-C": {
+    "per_match": 119.1,
+    "completion": 0.889,
+    "len_m_median": 19.1
+   },
+   "mid-L": {
+    "per_match": 146.4,
+    "completion": 0.865,
+    "len_m_median": 16.5
+   },
+   "mid-R": {
+    "per_match": 143.4,
+    "completion": 0.849,
+    "len_m_median": 16.6
+   }
+  },
+  "by_type": {
+   "Simple pass": {
+    "per_match": 661.6,
+    "completion": 0.917,
+    "len_m_median": 15.5
+   },
+   "High pass": {
+    "per_match": 66.0,
+    "completion": 0.537,
+    "len_m_median": 39.8
+   },
+   "Head pass": {
+    "per_match": 56.1,
+    "completion": 0.625,
+    "len_m_median": 14.7
+   },
+   "Cross": {
+    "per_match": 32.2,
+    "completion": 0.307,
+    "len_m_median": 28.6
+   },
+   "Launch": {
+    "per_match": 27.0,
+    "completion": 0.538,
+    "len_m_median": 45.7
+   },
+   "Smart pass": {
+    "per_match": 15.5,
+    "completion": 0.392,
+    "len_m_median": 19.4
+   },
+   "Hand pass": {
+    "per_match": 6.5,
+    "completion": 0.968,
+    "len_m_median": 25.9
+   }
+  }
+ },
+ "duels": {
+  "Air duel": {
+   "lost": 0.45,
+   "won": 0.453,
+   "neutral": 0.098
+  },
+  "Ground loose ball duel": {
+   "won": 0.415,
+   "lost": 0.418,
+   "neutral": 0.167
+  },
+  "Ground defending duel": {
+   "lost": 0.487,
+   "won": 0.22,
+   "neutral": 0.293
+  },
+  "Ground attacking duel": {
+   "won": 0.486,
+   "lost": 0.224,
+   "neutral": 0.291
+  }
+ },
+ "discipline_subs": {
+  "cards_per_match": {
+   "yellow": 3.105,
+   "red": 0.058,
+   "second_yellow": 0.05
+  },
+  "card_minute_median": 62.4,
+  "subs_per_team_match": 2.74,
+  "sub_minute": {
+   "p10": 52.0,
+   "median": 74,
+   "p90": 87.0
+  },
+  "first_sub_minute_median": 64
+ },
+ "shots": {
+  "per_match": 23.37,
+  "xg_model": {
+   "form": "sigmoid(b0 + b1*dist_m + b2*goal_angle_rad + b3*is_header)",
+   "b0": -0.8272,
+   "b1": -0.116,
+   "b2": 1.317,
+   "b3": -0.9175,
+   "fit_on": "8451 open-play shots, real goal outcomes",
+   "xg_per_match_check": 2.405,
+   "goals_per_match_open_play": 2.405
+  },
+  "by_distance_m": {
+   "0-6": {
+    "share": 0.037,
+    "goal_rate": 0.503,
+    "model_xg": 0.498,
+    "on_target": 0.626
+   },
+   "6-11": {
+    "share": 0.157,
+    "goal_rate": 0.219,
+    "model_xg": 0.214,
+    "on_target": 0.478
+   },
+   "11-16.5": {
+    "share": 0.287,
+    "goal_rate": 0.125,
+    "model_xg": 0.121,
+    "on_target": 0.404
+   },
+   "16.5-22": {
+    "share": 0.187,
+    "goal_rate": 0.06,
+    "model_xg": 0.068,
+    "on_target": 0.295
+   },
+   "22-30": {
+    "share": 0.251,
+    "goal_rate": 0.025,
+    "model_xg": 0.031,
+    "on_target": 0.261
+   },
+   "30-99": {
+    "share": 0.081,
+    "goal_rate": 0.023,
+    "model_xg": 0.013,
+    "on_target": 0.229
+   }
+  },
+  "outcome": {
+   "on_target": 0.353,
+   "blocked": 0.269,
+   "goal": 0.108
+  },
+  "body_part": {
+   "right": 0.515,
+   "left": 0.33,
+   "head": 0.156
+  },
+  "header_goal_rate": 0.135,
+  "penalty": {
+   "per_match": 0.211,
+   "conversion": 0.7
+  },
+  "direct_free_kick": {
+   "per_match": 0.921,
+   "conversion": 0.051
+  },
+  "counter_attack_shot_goal_rate": 0.198
+ },
+ "game_state": {
+  "leading": {
+   "team_shots_per90_raw": 10.89,
+   "on_ball_share_raw": 0.503,
+   "time_share": 0.262,
+   "shot_rate_multiplier": 0.916,
+   "on_ball_share_shift_pp": -2.95
+  },
+  "level": {
+   "team_shots_per90_raw": 10.98,
+   "on_ball_share_raw": 0.5,
+   "time_share": 0.476,
+   "shot_rate_multiplier": 1.02,
+   "on_ball_share_shift_pp": 0.58
+  },
+  "trailing": {
+   "team_shots_per90_raw": 10.93,
+   "on_ball_share_raw": 0.497,
+   "time_share": 0.262,
+   "shot_rate_multiplier": 1.059,
+   "on_ball_share_shift_pp": 1.83
+  },
+  "note": "multiplier/shift are within-team (controls for strong teams leading more often); raw values are confounded"
+ },
+ "team_strength": {
+  "goals": {
+   "home_multiplier": 1.335,
+   "base_rate_away": 1.144,
+   "attack": {
+    "min": 0.55,
+    "max": 2.04,
+    "sd": 0.391
+   },
+   "defence_conceded_mult": {
+    "min": 0.56,
+    "max": 1.34,
+    "sd": 0.229
+   },
+   "corr_attack_defence": -0.623
+  },
+  "shots": {
+   "home_multiplier": 1.255,
+   "base_rate_away": 10.343,
+   "attack": {
+    "min": 0.73,
+    "max": 1.42,
+    "sd": 0.219
+   },
+   "defence_conceded_mult": {
+    "min": 0.53,
+    "max": 1.23,
+    "sd": 0.196
+   },
+   "corr_attack_defence": -0.858
+  },
+  "note": "expected count = base * home_mult^is_home * attack[team] * defence_conceded_mult[opp]"
+ },
+ "players": {
+  "GK": {
+   "n": 38,
+   "height_cm": {
+    "mean": 190.6,
+    "sd": 4.7
+   },
+   "weight_kg": {
+    "mean": 85.1,
+    "sd": 6.0
+   },
+   "age": {
+    "mean": 30.1,
+    "sd": 3.8
+   },
+   "foot": {
+    "right": 0.816,
+    "left": 0.184
+   }
+  },
+  "DF": {
+   "n": 177,
+   "height_cm": {
+    "mean": 184.4,
+    "sd": 6.1
+   },
+   "weight_kg": {
+    "mean": 78.4,
+    "sd": 7.0
+   },
+   "age": {
+    "mean": 26.8,
+    "sd": 4.1
+   },
+   "foot": {
+    "right": 0.684,
+    "left": 0.316
+   }
+  },
+  "MD": {
+   "n": 191,
+   "height_cm": {
+    "mean": 179.7,
+    "sd": 6.3
+   },
+   "weight_kg": {
+    "mean": 73.7,
+    "sd": 6.8
+   },
+   "age": {
+    "mean": 25.7,
+    "sd": 4.1
+   },
+   "foot": {
+    "right": 0.77,
+    "left": 0.225,
+    "unknown": 0.005
+   }
+  },
+  "FW": {
+   "n": 108,
+   "height_cm": {
+    "mean": 181.9,
+    "sd": 7.0
+   },
+   "weight_kg": {
+    "mean": 77.5,
+    "sd": 7.5
+   },
+   "age": {
+    "mean": 25.7,
+    "sd": 4.1
+   },
+   "foot": {
+    "right": 0.88,
+    "left": 0.111,
+    "both": 0.009
+   }
+  }
+ },
+ "role_share": {
+  "passes": {
+   "MD": 0.426,
+   "DF": 0.422,
+   "FW": 0.11,
+   "GK": 0.043
+  },
+  "duels": {
+   "MD": 0.355,
+   "DF": 0.303,
+   "FW": 0.236,
+   "GK": 0.004
+  },
+  "interceptions": {
+   "DF": 0.527,
+   "MD": 0.351,
+   "FW": 0.085,
+   "GK": 0.036
+  },
+  "shots": {
+   "MD": 0.441,
+   "FW": 0.39,
+   "DF": 0.169
+  },
+  "goals": {
+   "FW": 0.546,
+   "MD": 0.34,
+   "DF": 0.114
+  }
+ },
+ "finishing_skill": {
+  "players": 95,
+  "goals_over_xg": {
+   "p10": 0.47,
+   "median": 1.09,
+   "p90": 1.8
+  }
+ }
+}

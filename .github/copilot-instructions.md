@@ -1,0 +1,1 @@
+Follow [AGENTS.md](../AGENTS.md) at the repo root: it holds the project rules, layout, conventions and commands for every coding agent working on MatchMind. Pay particular attention to the hard rules (synthetic data only, fictional names, no secrets, grounded generated text, original work).

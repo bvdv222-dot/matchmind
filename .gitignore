@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+web/dist/
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+.azure/
+
+# Data (raw third-party data never goes in the repo; generated matches are rebuilt)
+data/
+*.parquet
+*.zip
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/mcp.json
+!.vscode/extensions.json
