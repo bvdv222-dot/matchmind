@@ -28,3 +28,6 @@ Thumbs.db
 .vscode/*
 !.vscode/mcp.json
 !.vscode/extensions.json
+
+# TypeScript incremental build state
+*.tsbuildinfo

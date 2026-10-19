@@ -123,3 +123,13 @@ def test_analyst_failure_uses_the_deterministic_plan():
                 "translator": Scripted(Translation(text="Pelani falla una gran ocasión."))})
     assert job.plan["moment_id"] == "M-1"
     assert ("analyst", "fallback") in [(t["step"], t["outcome"]) for t in job.trace]
+
+
+def test_goals_always_get_a_note():
+    trig = _trigger()
+    trig.moments[0].update(kind="goal", priority=9)
+    wf = build_workflow(StubIntel(), {"analyst": Scripted(StoryPlan(publish=False)), "narrator": Scripted(GOOD_NOTE),
+                                      "personaliser": Scripted(PersonaText(text="Pelani misses a big chance.")),
+                                      "translator": Scripted(Translation(text="Pelani falla una gran ocasión."))})
+    job = asyncio.run(wf.run(trig)).get_outputs()[0]
+    assert not job.skipped and job.plan["moment_id"] == "M-1"

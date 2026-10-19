@@ -23,6 +23,7 @@ from agents.personas import LANGUAGES, Persona
 from agents.roles import Note, PersonaText, StoryPlan, Translation
 
 NOTE_WORDS = {"live_note": 45, "recap": 120}
+FORCE_PRIORITY = 7          # goals, red cards and penalties always get a note; the Analyst still picks the angle
 MAX_ATTEMPTS = 2
 
 
@@ -127,6 +128,8 @@ class Analyst(Executor):
                                           "headline")} for m in trig.moments]
         must = " A note is due (nothing has been said for a while): set publish to true and pick the state of play " \
                "or the most telling moment." if trig.reason == "check_in" else ""
+        if any(m["priority"] >= FORCE_PRIORITY for m in trig.moments):
+            must += " A goal, red card or penalty is among the moments: publish a note about it."
         prompt = (f"Note type: {trig.kind}.{must} Match {trig.match_id} at {job.state.get('clock')}.\n"
                   f"Match facts:\n{_facts_block(job.match_lines[:8])}\n\nNew moments:\n{json.dumps(moments)}")
         ids = {m["moment_id"] for m in trig.moments}
@@ -134,7 +137,10 @@ class Analyst(Executor):
             plan = await _ask(self.agent, prompt, StoryPlan)
             if plan.moment_id and plan.moment_id not in ids:
                 raise ValueError(f"unknown moment {plan.moment_id}")
-            if trig.kind == "recap" or trig.reason == "check_in":
+            must = trig.kind == "recap" or trig.reason == "check_in" or \
+                any(m["priority"] >= FORCE_PRIORITY for m in trig.moments)
+            if must and not plan.publish:
+                plan = self.fallback_plan(job) if not plan.angle else plan
                 plan.publish = True
             job.log("analyst", t0, "ok", publish=plan.publish)
         except Exception as e:     # a slow or confused model must not stop the broadcast

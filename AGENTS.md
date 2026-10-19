@@ -25,8 +25,8 @@ Pipeline: **generate → ingest → interpret → explain → render → persona
 | `intel/` | Possessions, xG, possession value, phases, rhythm, networks, win probability, expectation baselines, shifts, moments, fact sheets ([docs/INTEL.md](docs/INTEL.md)); models in `intel/models/` |
 | `mcp_server/` | match-intel MCP server exposing `intel/` as 12 tools (stdio + streamable HTTP) |
 | `agents/` | Microsoft Agent Framework workflow: Analyst, Narrator, Verifier (code), Personaliser, Translator, with revise / fallback paths ([docs/AGENT_SYSTEM.md](docs/AGENT_SYSTEM.md)) |
-| `api/` | FastAPI: REST, WebSocket / Web PubSub broadcaster, personas, "ask about this view" |
-| `web/` | React + Vite + TypeScript front end |
+| `api/` | FastAPI: REST views, live WebSocket feed, agent worker, ask-this-view, match-intel MCP at `/intel/mcp`, serves `web/dist` ([docs/API_AND_WEB.md](docs/API_AND_WEB.md)) |
+| `web/` | React 18 + Vite + TypeScript front end: broadcast, analyst, player focus, agents views (hand-built SVG, no UI libraries) |
 | `evals/` | Eval sets and runners (Foundry evaluations + number-check pass rate) |
 | `infra/` | Bicep for `azd` |
 | `calibration/` | Generator calibration parameters and the scripts that produced them |
@@ -51,6 +51,8 @@ python -m generator.validate --seasons 3 --frames 8                     # calibr
 python -m intel.train                                                   # rebuild intel/models after generator changes
 python -m mcp_server                                                    # match-intel MCP server (stdio)
 python -m agents run --home KIR --away NET --langs es --max-notes 8         # agents on a live match (Ollama locally)
+python -m api                                                           # API + web app on :8000 (build web/ first)
+cd web && npm run build                                                 # or npm run dev for hot reload on :5173
 docker compose up            # local stack (added on day 3)
 azd up                       # Azure (added on day 3)
 ```
